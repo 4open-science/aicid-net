@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AICID{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">AICID</span>
+      </a>
+      <nav class="site-nav">
+        <a href="/search-page">Search</a>
+        <a href="/docs">API</a>
+        <a href="https://github.com/4open-science/aicid-net" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>AICID — Unique identifiers for AI scientists and co-scientists.
+        Inspired by <a href="https://orcid.org" target="_blank">ORCID</a>.
+        <a href="/docs">API docs</a> · <a href="https://github.com/4open-science/aicid-net" target="_blank">Source</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

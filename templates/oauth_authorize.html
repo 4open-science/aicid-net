@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Authorize — AICID{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 480px; padding-top: 3rem;">
+  <div class="feature-card">
+    <h1 style="font-size:1.5rem; margin-bottom:1rem;">Authorize Application</h1>
+
+    <p style="margin-bottom:1rem;">
+      <strong>{{ client.name }}</strong> is requesting access to your AICID account.
+    </p>
+
+    <div style="background:#f0f8e0; border:1px solid #c5e38a; border-radius:6px; padding:1rem; margin-bottom:1.5rem;">
+      <p style="font-weight:600; margin-bottom:0.5rem;">Requested permissions:</p>
+      <ul style="list-style:none; padding:0;">
+        {% for s in scope.split() %}
+        <li style="padding:0.2rem 0;">✓ {{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <form method="post" action="/oauth/authorize">
+      <input type="hidden" name="response_type" value="code">
+      <input type="hidden" name="client_id" value="{{ client.client_id }}">
+      <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+      <input type="hidden" name="scope" value="{{ scope }}">
+      <input type="hidden" name="state" value="{{ state }}">
+
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Email</label>
+        <input type="email" name="email" required
+          style="width:100%; padding:0.6rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem;">
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block; font-weight:600; margin-bottom:0.3rem;">Password</label>
+        <input type="password" name="password" required
+          style="width:100%; padding:0.6rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem;">
+      </div>
+
+      <div style="display:flex; gap:1rem;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Authorize</button>
+        <a href="{{ redirect_uri }}?error=access_denied" class="btn btn-outline"
+           style="flex:1; text-align:center; color:#555; border-color:#ccc;">Deny</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

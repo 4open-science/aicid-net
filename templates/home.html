@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}AICID — Unique Identifiers for AI Scientists{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>Persistent identifiers for<br><span class="accent">AI scientists &amp; co-scientists</span></h1>
+    <p class="hero-sub">
+      AICID assigns a unique, persistent identifier to every AI agent doing science —
+      so their contributions to research can be tracked, attributed, and cited.
+    </p>
+    <div class="hero-actions">
+      <a href="/docs#/auth/register_auth_register_post" class="btn btn-primary">Register an Agent</a>
+      <a href="/search-page" class="btn btn-outline">Search the Registry</a>
+    </div>
+    <div class="aicid-example">
+      <span class="aicid-badge">AICID-0000-0002-1825-3X</span>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔬</div>
+      <h3>For AI Co-Scientists</h3>
+      <p>Register autonomous agents and LLM pipelines that contribute to scientific research with a persistent, citable identity.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>Track Works</h3>
+      <p>Link papers, datasets, experiments, and software outputs directly to the AI agent that produced or assisted with them.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Open API</h3>
+      <p>Integrate AICID into your research platform via our REST API and OAuth2. Full OpenAPI documentation at <a href="/docs">/docs</a>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ agent.name }} — AICID{% endblock %}
+
+{% block content %}
+<div class="container profile-layout">
+
+  <aside class="profile-sidebar">
+    <div class="agent-avatar">🤖</div>
+    <div class="aicid-badge-large">{{ agent.aicid }}</div>
+    <div class="agent-meta">
+      <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
+      {% if agent.visibility == "limited" %}
+        <span class="badge badge-limited">Limited</span>
+      {% endif %}
+    </div>
+    {% if agent.organization %}
+      <p class="agent-org">🏛 {{ agent.organization }}</p>
+    {% endif %}
+    {% if agent.base_model %}
+      <p class="agent-model">⚙️ Base: {{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</p>
+    {% endif %}
+    <div class="agent-links">
+      {% if agent.website_url %}<a href="{{ agent.website_url }}" target="_blank">🌐 Website</a>{% endif %}
+      {% if agent.github_url %}<a href="{{ agent.github_url }}" target="_blank">💻 GitHub</a>{% endif %}
+      {% if agent.paper_url %}<a href="{{ agent.paper_url }}" target="_blank">📑 Paper</a>{% endif %}
+      <a href="/agents/{{ agent.aicid }}/json">{ } JSON</a>
+    </div>
+  </aside>
+
+  <div class="profile-main">
+    <h1 class="agent-name">{{ agent.name }}</h1>
+
+    {% if agent.keywords %}
+    <div class="keywords">
+      {% for kw in agent.keywords.split(",") %}
+        <span class="keyword-tag">{{ kw.strip() }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if agent.description %}
+    <section class="profile-section">
+      <h2>About</h2>
+      <p>{{ agent.description }}</p>
+    </section>
+    {% endif %}
+
+    {% if employments %}
+    <section class="profile-section">
+      <h2>Deployments &amp; Affiliations</h2>
+      <ul class="record-list">
+        {% for e in employments %}
+        <li class="record-item">
+          <div class="record-title">{{ e.organization }}</div>
+          {% if e.role %}<div class="record-sub">{{ e.role }}</div>{% endif %}
+          {% if e.start_date or e.end_date %}
+            <div class="record-dates">
+              {{ e.start_date or "?" }} — {{ e.end_date or "present" }}
+            </div>
+          {% endif %}
+          {% if e.description %}<div class="record-desc">{{ e.description }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if works %}
+    <section class="profile-section">
+      <h2>Works</h2>
+      <ul class="record-list">
+        {% for w in works %}
+        <li class="record-item">
+          <span class="badge badge-work-type">{{ w.work_type }}</span>
+          <div class="record-title">
+            {% if w.url %}<a href="{{ w.url }}" target="_blank">{{ w.title }}</a>{% else %}{{ w.title }}{% endif %}
+          </div>
+          {% if w.journal %}<div class="record-sub">{{ w.journal }}</div>{% endif %}
+          {% if w.doi %}<div class="record-sub">DOI: <a href="https://doi.org/{{ w.doi }}" target="_blank">{{ w.doi }}</a></div>{% endif %}
+          {% if w.published_date %}<div class="record-dates">{{ w.published_date }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if fundings %}
+    <section class="profile-section">
+      <h2>Funding</h2>
+      <ul class="record-list">
+        {% for f in fundings %}
+        <li class="record-item">
+          <div class="record-title">{{ f.title }}</div>
+          {% if f.funder %}<div class="record-sub">{{ f.funder }}{% if f.grant_number %} · {{ f.grant_number }}{% endif %}</div>{% endif %}
+          {% if f.start_date or f.end_date %}
+            <div class="record-dates">{{ f.start_date or "?" }} — {{ f.end_date or "present" }}</div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if not works and not employments and not fundings %}
+    <p class="empty-state">No records yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Search — AICID{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Search the AICID Registry</h1>
+
+  <form class="search-form" action="/search-page" method="get">
+    <input
+      type="text"
+      name="q"
+      value="{{ q }}"
+      placeholder="Search by name, keywords, organization, base model…"
+      class="search-input"
+      autofocus
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  {% if q %}
+  <p class="search-meta">{{ agents | length }} result(s) for "{{ q }}"</p>
+
+  {% if agents %}
+  <ul class="agent-list">
+    {% for agent in agents %}
+    <li class="agent-card">
+      <a href="/agents/{{ agent.aicid }}" class="agent-card-link">
+        <div class="agent-card-header">
+          <span class="agent-card-name">{{ agent.name }}</span>
+          <span class="aicid-badge-sm">{{ agent.aicid }}</span>
+        </div>
+        <div class="agent-card-meta">
+          <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
+          {% if agent.base_model %}<span>{{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</span>{% endif %}
+          {% if agent.organization %}<span>{{ agent.organization }}</span>{% endif %}
+        </div>
+        {% if agent.description %}
+        <p class="agent-card-desc">{{ agent.description[:180] }}{% if agent.description|length > 180 %}…{% endif %}</p>
+        {% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-state">No agents found matching "{{ q }}".</p>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

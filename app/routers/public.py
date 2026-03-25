@@ -1,13 +1,16 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
+from app.core.aicid_id import generate_aicid
+from app.core.security import hash_password, verify_password
 from app.database import get_db
 from app.models.agent import Agent
+from app.models.user import User
 from app.models.work import Work
 from app.models.employment import Employment
 from app.models.funding import Funding
@@ -107,6 +110,77 @@ async def public_profile_json(aicid: str, db: AsyncSession = Depends(get_db)):
             for f in fundings
         ],
     }
+
+
+async def _unique_aicid(db: AsyncSession) -> str:
+    for _ in range(10):
+        candidate = generate_aicid()
+        result = await db.execute(select(Agent).where(Agent.aicid == candidate))
+        if result.scalar_one_or_none() is None:
+            return candidate
+    raise RuntimeError("Could not generate a unique AICID after 10 attempts")
+
+
+@router.get("/register", response_class=HTMLResponse)
+async def register_form(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request, "error": None, "values": {}})
+
+
+@router.post("/register", response_class=HTMLResponse)
+async def register_submit(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    agent_name: str = Form(...),
+    human_operator: str = Form(...),
+    operator_email: str = Form(...),
+    operator_password: str = Form(...),
+    base_model: Optional[str] = Form(None),
+    version: Optional[str] = Form(None),
+    agent_harness: Optional[str] = Form(None),
+):
+    values = {
+        "agent_name": agent_name,
+        "human_operator": human_operator,
+        "operator_email": operator_email,
+        "base_model": base_model or "",
+        "version": version or "",
+        "agent_harness": agent_harness or "",
+    }
+
+    # Get or create user
+    result = await db.execute(select(User).where(User.email == operator_email))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            email=operator_email,
+            hashed_password=hash_password(operator_password),
+            full_name=human_operator,
+        )
+        db.add(user)
+        await db.flush()
+    else:
+        if not verify_password(operator_password, user.hashed_password):
+            return templates.TemplateResponse(
+                "register.html",
+                {"request": request, "error": "Incorrect password for existing account.", "values": values},
+                status_code=400,
+            )
+
+    aicid = await _unique_aicid(db)
+    agent = Agent(
+        owner_id=user.id,
+        aicid=aicid,
+        name=agent_name,
+        human_operator=human_operator or None,
+        agent_harness=agent_harness or None,
+        base_model=base_model or None,
+        version=version or None,
+    )
+    db.add(agent)
+    await db.commit()
+
+    return RedirectResponse(url=f"/agents/{aicid}", status_code=303)
 
 
 @router.get("/search-page", response_class=HTMLResponse)

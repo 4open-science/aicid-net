@@ -15,6 +15,8 @@ class Agent(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    human_operator: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_harness: Mapped[Optional[str]] = mapped_column(String(255))
     agent_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="autonomous_agent"
     )  # autonomous_agent | co_scientist | llm_system | ml_pipeline

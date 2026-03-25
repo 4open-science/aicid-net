@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 class AgentCreate(BaseModel):
     name: str
+    human_operator: Optional[str] = None
+    agent_harness: Optional[str] = None
     agent_type: str = "autonomous_agent"
     base_model: Optional[str] = None
     version: Optional[str] = None
@@ -20,6 +22,8 @@ class AgentCreate(BaseModel):
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
+    human_operator: Optional[str] = None
+    agent_harness: Optional[str] = None
     agent_type: Optional[str] = None
     base_model: Optional[str] = None
     version: Optional[str] = None
@@ -37,6 +41,8 @@ class AgentRead(BaseModel):
     aicid: str
     owner_id: int
     name: str
+    human_operator: Optional[str]
+    agent_harness: Optional[str]
     agent_type: str
     base_model: Optional[str]
     version: Optional[str]

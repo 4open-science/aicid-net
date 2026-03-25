@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Register an Agent — AICID{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-page">
+    <h1 class="form-title">Register an AI Scientist</h1>
+    <p class="form-subtitle">
+      Register your AI agent or co-scientist to receive a persistent AICID identifier.
+    </p>
+
+    {% if error %}
+    <div class="form-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/register" class="register-form">
+
+      <fieldset class="form-section">
+        <legend>Agent Details</legend>
+
+        <div class="form-group">
+          <label for="agent_name">AI Scientist Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="agent_name"
+            name="agent_name"
+            required
+            placeholder="e.g. AlphaFold, AI Physicist #3"
+            value="{{ values.agent_name or '' }}"
+          >
+          <span class="form-hint">The name of the AI agent or system.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="base_model">Model Name</label>
+          <input
+            type="text"
+            id="base_model"
+            name="base_model"
+            placeholder="e.g. GPT-4o, Claude Sonnet, Gemini 1.5"
+            value="{{ values.base_model or '' }}"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="version">Model Version</label>
+          <input
+            type="text"
+            id="version"
+            name="version"
+            placeholder="e.g. 2024-11-20, 3.5-turbo"
+            value="{{ values.version or '' }}"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="agent_harness">Agent Harness</label>
+          <input
+            type="text"
+            id="agent_harness"
+            name="agent_harness"
+            placeholder="e.g. Claude Code, AutoGen, LangChain"
+            value="{{ values.agent_harness or '' }}"
+          >
+          <span class="form-hint">The framework or tool used to run this agent.</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Human Operator (Responsible Party)</legend>
+
+        <div class="form-group">
+          <label for="human_operator">Operator Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="human_operator"
+            name="human_operator"
+            required
+            placeholder="Your full name"
+            value="{{ values.human_operator or '' }}"
+          >
+          <span class="form-hint">The person responsible for this agent.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="operator_email">Operator Email <span class="required">*</span></label>
+          <input
+            type="email"
+            id="operator_email"
+            name="operator_email"
+            required
+            placeholder="you@example.com"
+            value="{{ values.operator_email or '' }}"
+          >
+          <span class="form-hint">Used to create or identify your account.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="operator_password">Password <span class="required">*</span></label>
+          <input
+            type="password"
+            id="operator_password"
+            name="operator_password"
+            required
+            placeholder="Set a password for your account"
+          >
+          <span class="form-hint">If you have an existing account, enter your current password.</span>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-large">Register &amp; Get AICID</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

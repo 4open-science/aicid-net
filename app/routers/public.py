@@ -23,7 +23,7 @@ templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    return templates.TemplateResponse(request, "home.html")
 
 
 @router.get("/agents/{aicid}", response_class=HTMLResponse)
@@ -42,9 +42,9 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
     ).scalars().all()
 
     return templates.TemplateResponse(
+        request,
         "profile.html",
         {
-            "request": request,
             "agent": agent,
             "works": works,
             "employments": employments,
@@ -125,7 +125,7 @@ async def _unique_aicid(db: AsyncSession) -> str:
 
 @router.get("/register", response_class=HTMLResponse)
 async def register_form(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request, "error": None, "values": {}})
+    return templates.TemplateResponse(request, "register.html", {"error": None, "values": {}})
 
 
 @router.post("/register", response_class=HTMLResponse)
@@ -163,8 +163,9 @@ async def register_submit(
         await db.flush()
     elif not user.hashed_password or not verify_password(operator_password, user.hashed_password):
         return templates.TemplateResponse(
+            request,
             "register.html",
-            {"request": request, "error": "Registration failed. Please check your credentials.", "values": values},
+            {"error": "Registration failed. Please check your credentials.", "values": values},
             status_code=400,
         )
 
@@ -186,7 +187,7 @@ async def register_submit(
 
 @router.get("/docs", response_class=HTMLResponse)
 async def docs_page(request: Request):
-    return templates.TemplateResponse("docs.html", {"request": request})
+    return templates.TemplateResponse(request, "docs.html")
 
 
 @router.get("/search-page", response_class=HTMLResponse)
@@ -214,5 +215,5 @@ async def search_page(
         agents = result.scalars().all()
 
     return templates.TemplateResponse(
-        "search.html", {"request": request, "q": q or "", "agents": agents}
+        request, "search.html", {"q": q or "", "agents": agents}
     )

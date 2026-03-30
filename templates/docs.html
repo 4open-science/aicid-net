@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Documentation — AICID{% endblock %}
+
+{% block content %}
+<div class="docs-page container">
+
+  <div class="docs-sidebar">
+    <nav class="docs-nav">
+      <p class="docs-nav-label">On this page</p>
+      <a href="#ui-guide">Using the Website</a>
+      <a href="#ui-register">1. Register an agent</a>
+      <a href="#ui-profile">2. View a profile</a>
+      <a href="#ui-search">3. Search the registry</a>
+      <a href="#api-guide">Using the API</a>
+      <a href="#api-auth">1. Authentication</a>
+      <a href="#api-agents">2. Agents</a>
+      <a href="#api-works">3. Works</a>
+      <a href="#api-employment">4. Employment</a>
+      <a href="#api-funding">5. Funding</a>
+      <a href="#api-public">6. Public endpoints</a>
+      <a href="#api-reference">Full API reference</a>
+    </nav>
+  </div>
+
+  <div class="docs-content">
+
+    <h1 class="docs-title">Documentation</h1>
+    <p class="docs-intro">
+      AICID assigns persistent, citable identifiers to AI agents that contribute to research.
+      This guide explains how to use the platform via the website and via the REST API.
+    </p>
+
+    <!-- ── WEBSITE UI ─────────────────────────────────────────── -->
+    <section class="docs-section" id="ui-guide">
+      <h2>Using the Website</h2>
+      <p>The web interface at <a href="https://aicid.net/" target="_blank">aicid.net</a> lets you register agents, browse profiles, and search the registry — no programming required.</p>
+
+      <h3 id="ui-register">1. Register an agent</h3>
+      <ol>
+        <li>Go to <a href="/register">/register</a> or click <strong>Register an Agent</strong> on the homepage.</li>
+        <li>Fill in the required fields:
+          <ul>
+            <li><strong>Agent name</strong> — a descriptive name for the AI agent (e.g. <em>ResearchBot v2</em>).</li>
+            <li><strong>Human operator</strong> — name of the person or team responsible for the agent.</li>
+            <li><strong>Operator email</strong> — used to link all your agents to a single account.</li>
+          </ul>
+        </li>
+        <li>Optionally provide the base model, version, and agent harness.</li>
+        <li>Click <strong>Register Agent</strong>. You are redirected to the new agent's public profile page, which shows the assigned AICID (e.g. <code>AICID-5282-9748-4313-4513</code>).</li>
+      </ol>
+
+      <h3 id="ui-profile">2. View a profile</h3>
+      <p>
+        Every registered agent has a public profile page at
+        <code>https://aicid.net/agents/&lt;AICID&gt;</code>.
+        Example:
+        <a href="https://aicid.net/agents/AICID-5282-9748-4313-4513" target="_blank">
+          aicid.net/agents/AICID-5282-9748-4313-4513
+        </a>.
+      </p>
+      <p>The profile displays:</p>
+      <ul>
+        <li>Agent name, type, base model, and organization.</li>
+        <li>Keywords and description.</li>
+        <li>Linked works (papers, datasets, software) with DOIs.</li>
+        <li>Employment/deployment affiliations and funding information.</li>
+        <li>A <strong>JSON export</strong> link for machine-readable access.</li>
+      </ul>
+
+      <h3 id="ui-search">3. Search the registry</h3>
+      <p>
+        Go to <a href="/search-page">/search-page</a> and type any keyword, agent name, organization, or
+        description term. Results show all public agents matching the query.
+        Clicking a result opens the agent's profile page.
+      </p>
+    </section>
+
+    <!-- ── REST API ───────────────────────────────────────────── -->
+    <section class="docs-section" id="api-guide">
+      <h2>Using the API</h2>
+      <p>
+        The AICID REST API lets you create and manage agent records programmatically.
+        All write operations require an access token obtained via the <code>/auth/token</code> endpoint.
+        Public read endpoints (profile lookup, search) do not require authentication.
+      </p>
+      <p>Base URL: <code>https://aicid.net</code></p>
+
+      <h3 id="api-auth">1. Authentication</h3>
+
+      <h4>Register a user account</h4>
+      <pre><code>POST /auth/register
+Content-Type: application/json
+
+{
+  "email": "you@example.com",
+  "password": "yourpassword",
+  "full_name": "Your Name"
+}</code></pre>
+
+      <h4>Obtain an access token</h4>
+      <pre><code>POST /auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=you@example.com&amp;password=yourpassword</code></pre>
+      <p>Response:</p>
+      <pre><code>{
+  "access_token": "&lt;JWT&gt;",
+  "refresh_token": "&lt;JWT&gt;",
+  "token_type": "bearer"
+}</code></pre>
+      <p>Include the token in all subsequent requests:</p>
+      <pre><code>Authorization: Bearer &lt;access_token&gt;</code></pre>
+
+      <h4>Refresh an access token</h4>
+      <pre><code>POST /auth/refresh
+Content-Type: application/json
+
+{ "refresh_token": "&lt;refresh_token&gt;" }</code></pre>
+
+      <h3 id="api-agents">2. Agents</h3>
+
+      <h4>Create an agent</h4>
+      <pre><code>POST /api/agents
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "name": "ResearchBot v2",
+  "agent_type": "llm_pipeline",
+  "base_model": "gpt-4o",
+  "version": "2.1.0",
+  "organization": "Example Lab",
+  "description": "Automates literature review.",
+  "keywords": "nlp,literature-review",
+  "visibility": "public"
+}</code></pre>
+      <p>Response includes the assigned <code>aicid</code> string.</p>
+
+      <h4>List your agents</h4>
+      <pre><code>GET /api/agents
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <h4>Get an agent</h4>
+      <pre><code>GET /api/agents/{aicid}
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <h4>Update an agent</h4>
+      <pre><code>PATCH /api/agents/{aicid}
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{ "description": "Updated description." }</code></pre>
+
+      <h4>Delete an agent</h4>
+      <pre><code>DELETE /api/agents/{aicid}
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <h3 id="api-works">3. Works</h3>
+      <p>Works are research outputs (papers, datasets, software) produced by an agent.</p>
+
+      <h4>Add a work</h4>
+      <pre><code>POST /api/agents/{aicid}/works
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "title": "Automated Literature Review",
+  "work_type": "journal-article",
+  "doi": "10.1234/example.2024",
+  "journal": "Nature AI",
+  "published_date": "2024-06-01"
+}</code></pre>
+
+      <h4>List works</h4>
+      <pre><code>GET /api/agents/{aicid}/works
+Authorization: Bearer &lt;token&gt;</code></pre>
+
+      <h4>Update / delete a work</h4>
+      <pre><code>PATCH /api/agents/{aicid}/works/{work_id}
+DELETE /api/agents/{aicid}/works/{work_id}</code></pre>
+
+      <h3 id="api-employment">4. Employment</h3>
+      <p>Deployment affiliations — the organizations where the agent is or was active.</p>
+
+      <h4>Add an employment record</h4>
+      <pre><code>POST /api/agents/{aicid}/employments
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "organization": "Example Lab",
+  "role": "research assistant",
+  "start_date": "2024-01-01"
+}</code></pre>
+
+      <h4>List / update / delete</h4>
+      <pre><code>GET    /api/agents/{aicid}/employments
+PATCH  /api/agents/{aicid}/employments/{emp_id}
+DELETE /api/agents/{aicid}/employments/{emp_id}</code></pre>
+
+      <h3 id="api-funding">5. Funding</h3>
+
+      <h4>Add a funding record</h4>
+      <pre><code>POST /api/agents/{aicid}/fundings
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "title": "AI for Science",
+  "funder": "NSF",
+  "grant_number": "AI-2024-001",
+  "url": "https://nsf.gov/grants/AI-2024-001"
+}</code></pre>
+
+      <h4>List / update / delete</h4>
+      <pre><code>GET    /api/agents/{aicid}/fundings
+PATCH  /api/agents/{aicid}/fundings/{fund_id}
+DELETE /api/agents/{aicid}/fundings/{fund_id}</code></pre>
+
+      <h3 id="api-public">6. Public endpoints</h3>
+      <p>These endpoints do not require authentication.</p>
+
+      <h4>Search agents</h4>
+      <pre><code>GET /search?q=&lt;keyword&gt;</code></pre>
+
+      <h4>Get a public profile (JSON)</h4>
+      <pre><code>GET /agents/{aicid}/json</code></pre>
+      <p>Returns the full agent record including works, employments, and fundings as JSON — useful for citation tools and research platforms.</p>
+
+      <h3 id="api-reference">Full API reference</h3>
+      <p>
+        The interactive OpenAPI reference (Swagger UI) is available at
+        <a href="/openapi">/openapi</a>.
+        It lists every endpoint with request/response schemas and lets you try calls directly in the browser.
+      </p>
+    </section>
+
+  </div><!-- /.docs-content -->
+</div><!-- /.docs-page -->
+{% endblock %}

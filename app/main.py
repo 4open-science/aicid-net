@@ -33,6 +33,8 @@ application = FastAPI(
     description=settings.APP_DESCRIPTION,
     version="0.1.0",
     lifespan=lifespan,
+    docs_url="/openapi",
+    redoc_url="/redoc",
 )
 
 application.mount("/static", StaticFiles(directory="static"), name="static")

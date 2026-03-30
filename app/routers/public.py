@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
 from app.core.aicid_id import generate_aicid
+from app.core.security import hash_password, verify_password
 from app.database import get_db
 from app.models.agent import Agent
 from app.models.user import User
@@ -134,6 +135,7 @@ async def register_submit(
     agent_name: str = Form(...),
     human_operator: str = Form(...),
     operator_email: str = Form(...),
+    operator_password: str = Form(...),
     base_model: Optional[str] = Form(None),
     version: Optional[str] = Form(None),
     agent_harness: Optional[str] = Form(None),
@@ -155,9 +157,16 @@ async def register_submit(
         user = User(
             email=operator_email,
             full_name=human_operator,
+            hashed_password=hash_password(operator_password),
         )
         db.add(user)
         await db.flush()
+    elif not user.hashed_password or not verify_password(operator_password, user.hashed_password):
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "error": "Registration failed. Please check your credentials.", "values": values},
+            status_code=400,
+        )
 
     aicid = await _unique_aicid(db)
     agent = Agent(

@@ -321,3 +321,117 @@ h1 { padding-top: 2rem; margin-bottom: 1rem; }
 
 .form-actions { display: flex; justify-content: flex-end; }
 .btn-large { padding: 0.85rem 2rem; font-size: 1.05rem; }
+
+/* Docs page */
+.docs-page {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 3rem;
+  padding-top: 2.5rem;
+  padding-bottom: 4rem;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .docs-page { grid-template-columns: 1fr; }
+  .docs-sidebar { display: none; }
+}
+
+.docs-sidebar {
+  position: sticky;
+  top: 5rem;
+}
+.docs-nav { display: flex; flex-direction: column; gap: 0.25rem; }
+.docs-nav-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mid);
+  margin-bottom: 0.4rem;
+}
+.docs-nav a {
+  font-size: 0.875rem;
+  color: var(--mid);
+  padding: 0.2rem 0;
+}
+.docs-nav a[href^="#ui-register"],
+.docs-nav a[href^="#ui-profile"],
+.docs-nav a[href^="#ui-search"],
+.docs-nav a[href^="#api-auth"],
+.docs-nav a[href^="#api-agents"],
+.docs-nav a[href^="#api-works"],
+.docs-nav a[href^="#api-employment"],
+.docs-nav a[href^="#api-funding"],
+.docs-nav a[href^="#api-public"],
+.docs-nav a[href^="#api-reference"] {
+  padding-left: 0.75rem;
+}
+.docs-nav a:hover { color: var(--dark); text-decoration: none; }
+
+.docs-title {
+  font-size: 2.2rem;
+  padding-top: 0;
+  margin-bottom: 0.5rem;
+}
+.docs-intro {
+  color: var(--mid);
+  font-size: 1.05rem;
+  margin-bottom: 2.5rem;
+  max-width: 680px;
+}
+
+.docs-section {
+  margin-bottom: 3rem;
+}
+.docs-section h2 {
+  font-size: 1.6rem;
+  border-bottom: 3px solid var(--green);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+.docs-section h3 {
+  font-size: 1.15rem;
+  margin-top: 1.8rem;
+  margin-bottom: 0.6rem;
+}
+.docs-section h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 1.2rem;
+  margin-bottom: 0.4rem;
+}
+.docs-section p { margin-bottom: 0.75rem; max-width: 720px; }
+.docs-section ul,
+.docs-section ol {
+  margin: 0.5rem 0 1rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.docs-section pre {
+  background: #1e2a10;
+  color: #d4e8a0;
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: 0.4rem 0 1rem;
+}
+.docs-section code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.875em;
+  background: #f0f4e8;
+  color: #3a5215;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+}
+.docs-section pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}

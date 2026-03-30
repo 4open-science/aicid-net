@@ -175,6 +175,11 @@ async def register_submit(
     return RedirectResponse(url=f"/agents/{aicid}", status_code=303)
 
 
+@router.get("/docs", response_class=HTMLResponse)
+async def docs_page(request: Request):
+    return templates.TemplateResponse("docs.html", {"request": request})
+
+
 @router.get("/search-page", response_class=HTMLResponse)
 async def search_page(
     request: Request,

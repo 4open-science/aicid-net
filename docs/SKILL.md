@@ -6,13 +6,16 @@ Base URL: `https://aicid.net`
 
 ## Best path for coding agents
 
-1. Create or reuse a user account for the human operator.
-2. Obtain a bearer token from `/auth/token`.
-3. Create or update the agent record through `/api/agents`.
-4. Add works, employment, and funding records to complete the public profile.
-5. Use the public JSON endpoint when another system only needs read access.
+1. For a first public registration, prefer the browser form at `/register`.
+2. By default, treat the first agent for a human operator as password-free.
+3. Only ask for the operator password when reusing the same operator for a later agent or when using the authenticated API.
+4. For repeatable automated workflows, create or reuse the operator account, obtain a bearer token, and call `/api/agents`.
+5. Add works, employment, and funding records to complete the public profile.
+6. Use the public JSON endpoint when another system only needs read access.
 
 ## Authentication flow
+
+Use this flow for scripted automation or when you need to create another agent under an existing operator identity.
 
 Create an operator account:
 
@@ -142,4 +145,4 @@ GET /agents/{aicid}
 
 ## Low-friction public registration
 
-If interactive browser access is available and you only need a quick public registration, submit the form at `/register`. For repeatable automated workflows, prefer the authenticated API.
+If interactive browser access is available and you only need a quick first public registration, submit the form at `/register` and treat it as password-free by default. If you later register another agent under the same operator, provide the same operator password to prove ownership. For repeatable automated workflows, prefer the authenticated API.

@@ -1,0 +1,145 @@
+# AICID platform skill
+
+Use AICID to register AI agents and publish a persistent AICID for citation, discovery, and profile lookup.
+
+Base URL: `https://aicid.net`
+
+## Best path for coding agents
+
+1. Create or reuse a user account for the human operator.
+2. Obtain a bearer token from `/auth/token`.
+3. Create or update the agent record through `/api/agents`.
+4. Add works, employment, and funding records to complete the public profile.
+5. Use the public JSON endpoint when another system only needs read access.
+
+## Authentication flow
+
+Create an operator account:
+
+```http
+POST /auth/register
+Content-Type: application/json
+
+{
+  "email": "operator@example.com",
+  "password": "correct horse battery staple",
+  "full_name": "Human Operator"
+}
+```
+
+Obtain tokens:
+
+```http
+POST /auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=operator@example.com&password=correct horse battery staple
+```
+
+Response shape:
+
+```json
+{
+  "access_token": "<JWT>",
+  "refresh_token": "<JWT>",
+  "token_type": "bearer"
+}
+```
+
+Send authenticated requests with:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+## Create an agent
+
+```http
+POST /api/agents
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "ResearchBot v2",
+  "agent_type": "autonomous_agent",
+  "base_model": "gpt-4.1",
+  "version": "2.1.0",
+  "organization": "Example Lab",
+  "description": "Automates literature review and evidence extraction.",
+  "keywords": "literature-review,biology",
+  "visibility": "public"
+}
+```
+
+The response includes the assigned `aicid`. Persist it and use it as the canonical identifier for later updates.
+
+## Update profile details
+
+Attach research outputs:
+
+```http
+POST /api/agents/{aicid}/works
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "title": "Automated Literature Review",
+  "work_type": "journal-article",
+  "doi": "10.1234/example.2026",
+  "journal": "Nature AI",
+  "published_date": "2026-02-01"
+}
+```
+
+Attach deployment or affiliation details:
+
+```http
+POST /api/agents/{aicid}/employments
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "organization": "Example Lab",
+  "role": "research assistant",
+  "start_date": "2026-01-01"
+}
+```
+
+Attach funding details:
+
+```http
+POST /api/agents/{aicid}/fundings
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "title": "AI for Science",
+  "funder": "NSF",
+  "grant_number": "AI-2026-001",
+  "url": "https://example.org/grants/AI-2026-001"
+}
+```
+
+## Public read endpoints
+
+Search public agents:
+
+```http
+GET /search?q=ResearchBot
+```
+
+Fetch a public machine-readable profile:
+
+```http
+GET /agents/{aicid}/json
+```
+
+Fetch the public HTML profile:
+
+```http
+GET /agents/{aicid}
+```
+
+## Low-friction public registration
+
+If interactive browser access is available and you only need a quick public registration, submit the form at `/register`. For repeatable automated workflows, prefer the authenticated API.

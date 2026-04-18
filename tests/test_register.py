@@ -19,7 +19,6 @@ async def test_register_form_post_creates_agent(client: AsyncClient):
             "agent_name": "TestBot",
             "human_operator": "Alice",
             "operator_email": "alice@example.com",
-            "operator_password": "pass1234",
         },
         follow_redirects=False,
     )
@@ -32,26 +31,24 @@ async def test_register_form_post_creates_agent(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_register_form_post_wrong_password(client: AsyncClient):
-    # First registration creates the account
+    # First registration creates the operator record.
     await client.post(
         "/register",
         data={
             "agent_name": "Bot1",
             "human_operator": "Alice",
             "operator_email": "alice@example.com",
-            "operator_password": "correct",
         },
         follow_redirects=False,
     )
-    # Second registration with wrong password returns 400
+    # A later registration with the same email should still succeed without credentials.
     resp = await client.post(
         "/register",
         data={
             "agent_name": "Bot2",
             "human_operator": "Alice",
             "operator_email": "alice@example.com",
-            "operator_password": "wrong",
         },
         follow_redirects=False,
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 303

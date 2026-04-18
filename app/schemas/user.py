@@ -1,12 +1,20 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, model_validator
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_password_from_operator_password(cls, data):
+        if isinstance(data, dict) and "password" not in data and "operator_password" in data:
+            data = data.copy()
+            data["password"] = data["operator_password"]
+        return data
 
 
 class UserRead(BaseModel):

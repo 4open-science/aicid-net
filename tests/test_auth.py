@@ -15,6 +15,18 @@ async def test_register(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_register_accepts_operator_password(client: AsyncClient):
+    resp = await client.post(
+        "/auth/register",
+        json={"email": "alias@example.com", "operator_password": "pass1234", "full_name": "Alias"},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["email"] == "alias@example.com"
+    assert "id" in data
+
+
+@pytest.mark.asyncio
 async def test_register_duplicate(client: AsyncClient):
     payload = {"email": "dup@example.com", "password": "pass1234", "full_name": "Dup"}
     await client.post("/auth/register", json=payload)

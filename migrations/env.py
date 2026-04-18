@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from app.config import settings
-from app.database import Base, _make_engine_url
+from app.database import Base, _make_connect_args, _make_engine_url
 
 # Import all models so their tables are registered in Base.metadata
 import app.models.user  # noqa
@@ -50,6 +50,7 @@ async def run_async_migrations() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=_make_connect_args(settings.DATABASE_URL),
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

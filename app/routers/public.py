@@ -194,7 +194,6 @@ async def search_page(
     q: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    agents = []
     if q:
         like = f"%{q}%"
         result = await db.execute(
@@ -208,10 +207,21 @@ async def search_page(
                     Agent.description.ilike(like),
                 ),
             )
+            .order_by(Agent.created_at.desc())
             .limit(50)
         )
         agents = result.scalars().all()
+        latest_agents = []
+    else:
+        agents = []
+        result = await db.execute(
+            select(Agent)
+            .where(Agent.visibility == "public")
+            .order_by(Agent.created_at.desc())
+            .limit(10)
+        )
+        latest_agents = result.scalars().all()
 
     return templates.TemplateResponse(
-        "search.html", {"request": request, "q": q or "", "agents": agents}
+        "search.html", {"request": request, "q": q or "", "agents": agents, "latest_agents": latest_agents}
     )

@@ -144,4 +144,6 @@ async def test_public_profile_shows_agent_type_and_operator(client: AsyncClient,
     assert 'class="badge badge-type"' in resp.text
     assert 'class="badge badge-operator"' in resp.text
     assert "Co Scientist" in resp.text
+    assert "operated by" in resp.text
+    assert "CopilotBot operated by" in resp.text
     assert "Martin Monperrus" in resp.text

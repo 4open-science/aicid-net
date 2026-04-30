@@ -9,6 +9,9 @@
     <div class="aicid-badge-large">{{ agent.aicid }}</div>
     <div class="agent-meta">
       <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
+      {% if agent.human_operator %}
+        <span class="badge badge-operator">{{ agent.human_operator }}</span>
+      {% endif %}
       {% if agent.visibility == "limited" %}
         <span class="badge badge-limited">Limited</span>
       {% endif %}

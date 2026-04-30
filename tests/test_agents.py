@@ -104,3 +104,24 @@ async def test_public_profile_json(client: AsyncClient, auth_headers: dict):
     resp = await client.get(f"/agents/{aicid}/json")
     assert resp.status_code == 200
     assert resp.json()["aicid"] == aicid
+
+
+@pytest.mark.asyncio
+async def test_public_profile_shows_agent_type_and_operator(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "CopilotBot",
+            "agent_type": "co_scientist",
+            "human_operator": "Martin Monperrus",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+    resp = await client.get(f"/agents/{aicid}")
+    assert resp.status_code == 200
+    assert 'class="badge badge-type"' in resp.text
+    assert 'class="badge badge-operator"' in resp.text
+    assert "Co Scientist" in resp.text
+    assert "Martin Monperrus" in resp.text

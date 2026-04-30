@@ -28,10 +28,12 @@
   </aside>
 
   <div class="profile-main">
-    <h1 class="agent-name">{{ agent.name }}</h1>
-    {% if agent.human_operator %}
-    <p class="agent-operator">operated by <span class="badge badge-operator">{{ agent.human_operator }}</span></p>
-    {% endif %}
+    <h1 class="agent-name-row">
+      <span class="agent-name">{{ agent.name }}</span>
+      {% if agent.human_operator %}
+      <span class="agent-operator">operated by <span class="badge badge-operator">{{ agent.human_operator }}</span></span>
+      {% endif %}
+    </h1>
 
     {% if agent.keywords %}
     <div class="keywords">

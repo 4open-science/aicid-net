@@ -174,8 +174,10 @@ main { flex: 1; }
 .agent-org, .agent-model { font-size: 0.9rem; color: var(--mid); margin: 0.4rem 0; }
 .agent-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; font-size: 0.9rem; }
 
-.agent-name { font-size: 2rem; margin-bottom: 0.25rem; }
-.agent-operator { font-size: 1rem; color: #555; margin-bottom: 0.75rem; }
+.agent-name-row { font-size: 1.6rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.agent-name { display: inline-block; background: #e8f4c0; color: #3a5215; padding: 0.15rem 0.5rem; border-radius: var(--radius); }
+.agent-operator { color: #555; font-size: 1rem; }
+.agent-operator .badge { font-size: 1.6rem; }
 .keywords { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
 .keyword-tag {
   background: #e8f4c0;

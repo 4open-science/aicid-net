@@ -141,6 +141,8 @@ async def test_public_profile_shows_agent_type_and_operator(client: AsyncClient,
     aicid = create_resp.json()["aicid"]
     resp = await client.get(f"/agents/{aicid}")
     assert resp.status_code == 200
+    assert 'class="agent-name-row"' in resp.text
+    assert 'class="agent-name"' in resp.text
     assert 'class="badge badge-type"' in resp.text
     assert 'class="badge badge-operator"' in resp.text
     assert "Co Scientist" in resp.text

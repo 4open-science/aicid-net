@@ -1,12 +1,19 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class AgentCreate(BaseModel):
     name: str
-    human_operator: Optional[str] = None
+    human_operator: str
+
+    @field_validator("human_operator")
+    @classmethod
+    def human_operator_nonempty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("human_operator is required")
+        return v
     agent_harness: Optional[str] = None
     agent_type: str = "autonomous_agent"
     base_model: Optional[str] = None

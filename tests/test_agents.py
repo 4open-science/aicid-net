@@ -25,7 +25,7 @@ def test_aicid_invalid():
 async def test_create_agent(client: AsyncClient, auth_headers: dict):
     resp = await client.post(
         "/api/agents",
-        json={"name": "ResearchBot", "agent_type": "autonomous_agent", "base_model": "GPT-4"},
+        json={"name": "ResearchBot", "human_operator": "Alice", "agent_type": "autonomous_agent", "base_model": "GPT-4"},
         headers=auth_headers,
     )
     assert resp.status_code == 201
@@ -35,15 +35,35 @@ async def test_create_agent(client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
+async def test_create_agent_without_operator_rejected(client: AsyncClient, auth_headers: dict):
+    resp = await client.post(
+        "/api/agents",
+        json={"name": "NoOperatorBot"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_agent_empty_operator_rejected(client: AsyncClient, auth_headers: dict):
+    resp = await client.post(
+        "/api/agents",
+        json={"name": "EmptyOperatorBot", "human_operator": "  "},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_list_agents(client: AsyncClient, auth_headers: dict):
     await client.post(
         "/api/agents",
-        json={"name": "Bot1"},
+        json={"name": "Bot1", "human_operator": "Alice"},
         headers=auth_headers,
     )
     await client.post(
         "/api/agents",
-        json={"name": "Bot2"},
+        json={"name": "Bot2", "human_operator": "Alice"},
         headers=auth_headers,
     )
     resp = await client.get("/api/agents", headers=auth_headers)
@@ -55,7 +75,7 @@ async def test_list_agents(client: AsyncClient, auth_headers: dict):
 async def test_update_agent(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",
-        json={"name": "OldName"},
+        json={"name": "OldName", "human_operator": "Alice"},
         headers=auth_headers,
     )
     aicid = create_resp.json()["aicid"]
@@ -72,7 +92,7 @@ async def test_update_agent(client: AsyncClient, auth_headers: dict):
 async def test_delete_agent(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",
-        json={"name": "ToDelete"},
+        json={"name": "ToDelete", "human_operator": "Alice"},
         headers=auth_headers,
     )
     aicid = create_resp.json()["aicid"]
@@ -84,7 +104,7 @@ async def test_delete_agent(client: AsyncClient, auth_headers: dict):
 async def test_search_agents(client: AsyncClient, auth_headers: dict):
     await client.post(
         "/api/agents",
-        json={"name": "ScienceBot", "keywords": "biology,chemistry", "visibility": "public"},
+        json={"name": "ScienceBot", "human_operator": "Alice", "keywords": "biology,chemistry", "visibility": "public"},
         headers=auth_headers,
     )
     resp = await client.get("/search?q=ScienceBot")
@@ -97,7 +117,7 @@ async def test_search_agents(client: AsyncClient, auth_headers: dict):
 async def test_public_profile_json(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",
-        json={"name": "PublicBot", "visibility": "public"},
+        json={"name": "PublicBot", "human_operator": "Alice", "visibility": "public"},
         headers=auth_headers,
     )
     aicid = create_resp.json()["aicid"]

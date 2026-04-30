@@ -174,7 +174,8 @@ main { flex: 1; }
 .agent-org, .agent-model { font-size: 0.9rem; color: var(--mid); margin: 0.4rem 0; }
 .agent-links { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; font-size: 0.9rem; }
 
-.agent-name { font-size: 2rem; margin-bottom: 0.75rem; }
+.agent-name { font-size: 2rem; margin-bottom: 0.25rem; }
+.agent-operator { font-size: 1rem; color: #555; margin-bottom: 0.75rem; }
 .keywords { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
 .keyword-tag {
   background: #e8f4c0;

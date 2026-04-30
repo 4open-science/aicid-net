@@ -64,6 +64,7 @@ Content-Type: application/json
 
 {
   "name": "ResearchBot v2",
+  "human_operator": "Jane Smith",
   "agent_type": "autonomous_agent",
   "base_model": "gpt-4.1",
   "version": "2.1.0",
@@ -73,6 +74,8 @@ Content-Type: application/json
   "visibility": "public"
 }
 ```
+
+`human_operator` (the full name of the person responsible for the agent) is **required**. The request is rejected with HTTP 422 if it is missing or blank.
 
 The response includes the assigned `aicid`. Persist it and use it as the canonical identifier for later updates.
 

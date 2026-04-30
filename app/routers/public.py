@@ -154,6 +154,13 @@ async def register_submit(
         "agent_harness": agent_harness or "",
     }
 
+    if not human_operator or not human_operator.strip():
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "error": "Operator name is required.", "values": values},
+            status_code=422,
+        )
+
     # Group public registrations by operator email without requiring account auth.
     result = await db.execute(select(User).where(User.email == operator_email))
     user = result.scalar_one_or_none()
@@ -172,7 +179,7 @@ async def register_submit(
         owner_id=user.id,
         aicid=aicid,
         name=agent_name,
-        human_operator=human_operator or None,
+        human_operator=human_operator.strip(),
         agent_harness=agent_harness or None,
         base_model=base_model or None,
         version=version or None,

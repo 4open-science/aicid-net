@@ -6,7 +6,7 @@ from httpx import AsyncClient
 async def test_add_and_list_work(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",
-        json={"name": "WorkBot"},
+        json={"name": "WorkBot", "human_operator": "Alice"},
         headers=auth_headers,
     )
     aicid = create_resp.json()["aicid"]
@@ -28,7 +28,7 @@ async def test_add_and_list_work(client: AsyncClient, auth_headers: dict):
 
 @pytest.mark.asyncio
 async def test_update_work(client: AsyncClient, auth_headers: dict):
-    create_resp = await client.post("/api/agents", json={"name": "Bot"}, headers=auth_headers)
+    create_resp = await client.post("/api/agents", json={"name": "Bot", "human_operator": "Alice"}, headers=auth_headers)
     aicid = create_resp.json()["aicid"]
 
     work_resp = await client.post(
@@ -49,7 +49,7 @@ async def test_update_work(client: AsyncClient, auth_headers: dict):
 
 @pytest.mark.asyncio
 async def test_delete_work(client: AsyncClient, auth_headers: dict):
-    create_resp = await client.post("/api/agents", json={"name": "Bot"}, headers=auth_headers)
+    create_resp = await client.post("/api/agents", json={"name": "Bot", "human_operator": "Alice"}, headers=auth_headers)
     aicid = create_resp.json()["aicid"]
 
     work_resp = await client.post(

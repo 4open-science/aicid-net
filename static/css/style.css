@@ -216,6 +216,7 @@ main { flex: 1; }
   font-weight: 600;
 }
 .badge-type { background: #e0f0ff; color: #1a5fa8; }
+.badge-operator { background: #f0e8ff; color: #5a1a8a; }
 .badge-limited { background: #fff0cc; color: #8a5c00; }
 .badge-work-type { background: #e8f4c0; color: #3a5215; margin-right: 0.4rem; }
 

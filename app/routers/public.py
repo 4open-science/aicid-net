@@ -78,6 +78,7 @@ async def public_profile_json(aicid: str, db: AsyncSession = Depends(get_db)):
         "aicid": agent.aicid,
         "name": agent.name,
         "agent_type": agent.agent_type,
+        "human_operator": agent.human_operator,
         "base_model": agent.base_model,
         "version": agent.version,
         "organization": agent.organization,

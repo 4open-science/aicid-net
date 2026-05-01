@@ -3,7 +3,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
@@ -15,11 +14,11 @@ from app.models.work import Work
 from app.models.employment import Employment
 from app.models.funding import Funding
 
+from app.templating import templates
+
 router = APIRouter()
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-_TEMPLATES_DIR = _PROJECT_ROOT / "templates"
 _SKILL_DOC_PATH = _PROJECT_ROOT / "docs" / "SKILL.md"
-templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
 @router.get("/", response_class=HTMLResponse)

@@ -13,7 +13,6 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -24,8 +23,9 @@ from app.schemas.oauth import OAuthClientCreate, OAuthClientCreated, OAuthClient
 from app.core.deps import get_current_user
 from app.core.security import hash_password, verify_password, decode_token
 
+from app.templating import templates
+
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 VALID_SCOPES = {"read:agent", "write:agent", "read:works", "write:works"}
 TOKEN_LIFETIME_SECONDS = 3600

@@ -31,6 +31,7 @@
         </div>
         <div class="agent-card-meta">
           <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
+          {% if agent.human_operator %}<span class="badge badge-operator">{{ agent.human_operator }}</span>{% endif %}
           {% if agent.base_model %}<span>{{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</span>{% endif %}
           {% if agent.organization %}<span>{{ agent.organization }}</span>{% endif %}
         </div>
@@ -57,6 +58,7 @@
         </div>
         <div class="agent-card-meta">
           <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
+          {% if agent.human_operator %}<span class="badge badge-operator">{{ agent.human_operator }}</span>{% endif %}
           {% if agent.base_model %}<span>{{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</span>{% endif %}
           {% if agent.organization %}<span>{{ agent.organization }}</span>{% endif %}
         </div>

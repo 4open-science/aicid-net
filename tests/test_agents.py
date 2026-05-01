@@ -151,3 +151,21 @@ async def test_public_profile_shows_agent_type_and_operator(client: AsyncClient,
     assert "operated by" in resp.text
     assert "CopilotBot" in resp.text
     assert "Martin Monperrus" in resp.text
+
+
+@pytest.mark.asyncio
+async def test_search_page_shows_operator_badge(client: AsyncClient, auth_headers: dict):
+    await client.post(
+        "/api/agents",
+        json={
+            "name": "SearchBot",
+            "agent_type": "code_agent",
+            "human_operator": "Martin Monperrus",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    resp = await client.get("/search-page")
+    assert resp.status_code == 200
+    assert 'class="badge badge-operator"' in resp.text
+    assert "Martin Monperrus" in resp.text

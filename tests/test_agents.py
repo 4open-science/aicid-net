@@ -167,5 +167,9 @@ async def test_search_page_shows_operator_badge(client: AsyncClient, auth_header
     )
     resp = await client.get("/search-page")
     assert resp.status_code == 200
+    assert 'class="aicid-badge-sm"' in resp.text
+    assert 'class="agent-card-name"' in resp.text
+    assert "operated by" in resp.text
     assert 'class="badge badge-operator"' in resp.text
     assert "Martin Monperrus" in resp.text
+    assert 'class="badge badge-type"' not in resp.text

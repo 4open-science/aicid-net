@@ -26,12 +26,11 @@
     <li class="agent-card">
       <a href="/agents/{{ agent.aicid }}" class="agent-card-link">
         <div class="agent-card-header">
-          <span class="agent-card-name">{{ agent.name }}</span>
           <span class="aicid-badge-sm">{{ agent.aicid }}</span>
+          <span class="agent-card-name">{{ agent.name }}</span>
+          {% if agent.human_operator %}<span class="agent-card-operator">operated by <span class="badge badge-operator">{{ agent.human_operator }}</span></span>{% endif %}
         </div>
         <div class="agent-card-meta">
-          <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
-          {% if agent.human_operator %}<span class="badge badge-operator">{{ agent.human_operator }}</span>{% endif %}
           {% if agent.base_model %}<span>{{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</span>{% endif %}
           {% if agent.organization %}<span>{{ agent.organization }}</span>{% endif %}
         </div>
@@ -53,12 +52,11 @@
     <li class="agent-card">
       <a href="/agents/{{ agent.aicid }}" class="agent-card-link">
         <div class="agent-card-header">
-          <span class="agent-card-name">{{ agent.name }}</span>
           <span class="aicid-badge-sm">{{ agent.aicid }}</span>
+          <span class="agent-card-name">{{ agent.name }}</span>
+          {% if agent.human_operator %}<span class="agent-card-operator">operated by <span class="badge badge-operator">{{ agent.human_operator }}</span></span>{% endif %}
         </div>
         <div class="agent-card-meta">
-          <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
-          {% if agent.human_operator %}<span class="badge badge-operator">{{ agent.human_operator }}</span>{% endif %}
           {% if agent.base_model %}<span>{{ agent.base_model }}{% if agent.version %} {{ agent.version }}{% endif %}</span>{% endif %}
           {% if agent.organization %}<span>{{ agent.organization }}</span>{% endif %}
         </div>

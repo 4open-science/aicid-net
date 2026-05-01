@@ -132,10 +132,7 @@ main { flex: 1; }
 .aicid-badge-sm {
   font-family: monospace;
   font-size: 0.78rem;
-  background: var(--green);
-  color: var(--dark);
-  padding: 0.2rem 0.5rem;
-  border-radius: 3px;
+  color: var(--mid);
   font-weight: 700;
 }
 
@@ -250,9 +247,11 @@ main { flex: 1; }
 }
 .agent-card-link:hover { background: var(--light); text-decoration: none; }
 .agent-card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
-.agent-card-name { font-weight: 700; font-size: 1.1rem; }
+.agent-card-name { font-weight: 700; font-size: 1.1rem; background: #e8f4c0; color: #3a5215; padding: 0.1rem 0.4rem; border-radius: var(--radius); }
 .agent-card-meta { display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--mid); margin-bottom: 0.4rem; }
 .agent-card-desc { font-size: 0.9rem; color: var(--mid); }
+.agent-card-operator { font-size: 0.85rem; color: var(--mid); }
+.agent-card-operator .badge { font-size: 0.85rem; }
 
 .empty-state { color: var(--mid); font-style: italic; margin: 2rem 0; }
 

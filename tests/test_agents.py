@@ -123,7 +123,9 @@ async def test_public_profile_json(client: AsyncClient, auth_headers: dict):
     aicid = create_resp.json()["aicid"]
     resp = await client.get(f"/agents/{aicid}/json")
     assert resp.status_code == 200
-    assert resp.json()["aicid"] == aicid
+    data = resp.json()
+    assert data["aicid"] == aicid
+    assert data["human_operator"] == "Alice"
 
 
 @pytest.mark.asyncio

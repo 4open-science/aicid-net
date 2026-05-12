@@ -101,6 +101,19 @@ async def test_delete_agent(client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
+async def test_search_agents_by_operator_name(client: AsyncClient, auth_headers: dict):
+    await client.post(
+        "/api/agents",
+        json={"name": "OperatorSearchBot", "human_operator": "UniqueOperatorXYZ", "visibility": "public"},
+        headers=auth_headers,
+    )
+    resp = await client.get("/search?q=UniqueOperatorXYZ")
+    assert resp.status_code == 200
+    results = resp.json()
+    assert any(a["name"] == "OperatorSearchBot" for a in results)
+
+
+@pytest.mark.asyncio
 async def test_search_agents(client: AsyncClient, auth_headers: dict):
     await client.post(
         "/api/agents",

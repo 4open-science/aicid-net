@@ -31,6 +31,7 @@ async def search_agents(
                 Agent.keywords.ilike(like),
                 Agent.organization.ilike(like),
                 Agent.description.ilike(like),
+                Agent.human_operator.ilike(like),
             )
         )
     if agent_type:

@@ -17,6 +17,7 @@ import app.models.work  # noqa
 import app.models.employment  # noqa
 import app.models.funding  # noqa
 import app.models.oauth  # noqa
+import app.models.auth_challenge  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", _make_engine_url(settings.DATABASE_URL))

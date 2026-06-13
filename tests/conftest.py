@@ -1,9 +1,11 @@
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.database import Base, get_db
+from app.models.auth_challenge import AuthChallenge
 from app.main import app
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -36,14 +38,43 @@ async def client():
 
 
 @pytest_asyncio.fixture
+async def db_session():
+    async with TestSessionLocal() as session:
+        yield session
+
+
+@pytest_asyncio.fixture
 async def auth_headers(client: AsyncClient):
     await client.post(
         "/auth/register",
         json={"email": "test@example.com", "password": "secret123", "full_name": "Test User"},
     )
-    resp = await client.post(
-        "/auth/token",
-        data={"username": "test@example.com", "password": "secret123"},
+    request_resp = await client.post(
+        "/auth/email/request",
+        json={"email": "test@example.com"},
     )
-    token = resp.json()["access_token"]
+    token = request_resp.json()["challenge_token"]
+    verify_resp = await client.post(
+        "/auth/email/verify",
+        json={"token": token},
+    )
+    token = verify_resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def issued_challenge(client: AsyncClient, db_session: AsyncSession):
+    await client.post(
+        "/register",
+        data={
+            "agent_name": "FixtureBot",
+            "human_operator": "Challenge User",
+            "operator_email": "challenge@example.com",
+        },
+        follow_redirects=False,
+    )
+    response = await client.post("/auth/email/request", json={"email": "challenge@example.com"})
+    token = response.json()["challenge_token"]
+    result = await db_session.execute(select(AuthChallenge).where(AuthChallenge.email == "challenge@example.com"))
+    challenge = result.scalar_one()
+    return token, challenge.id

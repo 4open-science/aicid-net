@@ -35,3 +35,23 @@ class Token(BaseModel):
 
 class TokenRefresh(BaseModel):
     refresh_token: str
+
+
+class EmailLoginRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailLoginRequestResponse(BaseModel):
+    detail: str
+    expires_in_seconds: int
+    challenge_token: str | None = None
+
+
+class EmailLoginVerify(BaseModel):
+    token: str
+
+
+class PasswordlessToken(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in_seconds: int

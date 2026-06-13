@@ -19,7 +19,7 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    email = decode_token(token)
+    email = decode_token(token, expected_type="access")
     if not email:
         raise credentials_exception
     result = await db.execute(select(User).where(User.email == email))

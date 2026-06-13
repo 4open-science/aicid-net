@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -15,11 +17,19 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    subject: str,
+    expires_delta: Optional[timedelta] = None,
+    auth_method: str = "password",
+) -> str:
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    return jwt.encode({"sub": subject, "exp": expire}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return jwt.encode(
+        {"sub": subject, "exp": expire, "type": "access", "auth_method": auth_method},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
 
 
 def create_refresh_token(subject: str) -> str:
@@ -31,10 +41,20 @@ def create_refresh_token(subject: str) -> str:
     )
 
 
-def decode_token(token: str) -> Optional[str]:
+def decode_token(token: str, expected_type: str | None = None) -> Optional[str]:
     """Returns the subject (user email) or None if invalid/expired."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if expected_type and payload.get("type") != expected_type:
+            return None
         return payload.get("sub")
     except JWTError:
         return None
+
+
+def generate_opaque_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def hash_opaque_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

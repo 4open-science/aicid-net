@@ -13,6 +13,7 @@ import app.models.work  # noqa: F401
 import app.models.employment  # noqa: F401
 import app.models.funding  # noqa: F401
 import app.models.oauth  # noqa: F401
+import app.models.auth_challenge  # noqa: F401
 
 from app.routers import auth, agents, works, employment, funding, search, public, oauth  # noqa: F401
 

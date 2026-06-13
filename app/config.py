@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     PASSWORDLESS_API_TOKEN_EXPIRE_MINUTES: int = 30
     AUTH_CHALLENGE_EXPIRE_MINUTES: int = 15
+    BROWSER_SESSION_EXPIRE_MINUTES: int = 30
     ENVIRONMENT: str = "development"
 
     APP_NAME: str = "AICID"
@@ -22,6 +23,7 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str | None = None
     SMTP_PASSWORD: str | None = None
     SMTP_USE_TLS: bool = True
+    SESSION_COOKIE_NAME: str = "aicid_session"
 
 
 settings = Settings()

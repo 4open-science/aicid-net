@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Manage Profiles — AICID{% endblock %}
+
+{% block content %}
+<div class="container manage-page">
+  <div class="manage-header">
+    <div>
+      <h1>Manage your profiles</h1>
+      <p>Signed in as <strong>{{ user.email }}</strong>. Update your public agent records below.</p>
+    </div>
+    <form method="post" action="/auth/logout">
+      <button type="submit" class="btn btn-outline-dark">Sign Out</button>
+    </form>
+  </div>
+
+  {% if updated %}
+  <div class="form-success">Saved changes for {{ updated }}.</div>
+  {% endif %}
+
+  {% if agents %}
+    <div class="manage-grid">
+      {% for agent in agents %}
+      <form method="post" action="/manage/agents/{{ agent.aicid }}" class="manage-card">
+        <div class="manage-card-header">
+          <div>
+            <h2>{{ agent.name }}</h2>
+            <p class="manage-card-sub">{{ agent.aicid }}</p>
+          </div>
+          <a href="/agents/{{ agent.aicid }}" target="_blank">View public profile</a>
+        </div>
+
+        <div class="manage-fields">
+          <div class="form-group">
+            <label for="name-{{ agent.aicid }}">Agent Name</label>
+            <input id="name-{{ agent.aicid }}" name="name" value="{{ agent.name }}" required>
+          </div>
+          <div class="form-group">
+            <label for="human-{{ agent.aicid }}">Human Operator</label>
+            <input id="human-{{ agent.aicid }}" name="human_operator" value="{{ agent.human_operator or '' }}" required>
+          </div>
+          <div class="form-group">
+            <label for="harness-{{ agent.aicid }}">Agent Harness</label>
+            <input id="harness-{{ agent.aicid }}" name="agent_harness" value="{{ agent.agent_harness or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="type-{{ agent.aicid }}">Agent Type</label>
+            <input id="type-{{ agent.aicid }}" name="agent_type" value="{{ agent.agent_type }}">
+          </div>
+          <div class="form-group">
+            <label for="base-{{ agent.aicid }}">Base Model</label>
+            <input id="base-{{ agent.aicid }}" name="base_model" value="{{ agent.base_model or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="version-{{ agent.aicid }}">Version</label>
+            <input id="version-{{ agent.aicid }}" name="version" value="{{ agent.version or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="org-{{ agent.aicid }}">Organization</label>
+            <input id="org-{{ agent.aicid }}" name="organization" value="{{ agent.organization or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="visibility-{{ agent.aicid }}">Visibility</label>
+            <input id="visibility-{{ agent.aicid }}" name="visibility" value="{{ agent.visibility or 'public' }}">
+          </div>
+          <div class="form-group form-group-wide">
+            <label for="description-{{ agent.aicid }}">Description</label>
+            <textarea id="description-{{ agent.aicid }}" name="description" rows="4">{{ agent.description or '' }}</textarea>
+          </div>
+          <div class="form-group form-group-wide">
+            <label for="keywords-{{ agent.aicid }}">Keywords</label>
+            <input id="keywords-{{ agent.aicid }}" name="keywords" value="{{ agent.keywords or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="website-{{ agent.aicid }}">Website URL</label>
+            <input id="website-{{ agent.aicid }}" name="website_url" value="{{ agent.website_url or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="github-{{ agent.aicid }}">GitHub URL</label>
+            <input id="github-{{ agent.aicid }}" name="github_url" value="{{ agent.github_url or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="paper-{{ agent.aicid }}">Paper URL</label>
+            <input id="paper-{{ agent.aicid }}" name="paper_url" value="{{ agent.paper_url or '' }}">
+          </div>
+        </div>
+
+        <div class="manage-card-actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty-state">No agents are linked to this operator email yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

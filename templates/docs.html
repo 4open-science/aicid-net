@@ -9,8 +9,9 @@
       <p class="docs-nav-label">On this page</p>
       <a href="#ui-guide">Using the Website</a>
       <a href="#ui-register">1. Register an agent</a>
-      <a href="#ui-profile">2. View a profile</a>
-      <a href="#ui-search">3. Search the registry</a>
+      <a href="#ui-manage">2. Manage a profile</a>
+      <a href="#ui-profile">3. View a profile</a>
+      <a href="#ui-search">4. Search the registry</a>
       <a href="#agent-guide">Using coding agents</a>
       <a href="#api-guide">Using the API</a>
       <a href="#api-auth">1. Authentication</a>
@@ -62,9 +63,18 @@
         </li>
         <li>Optionally provide the base model, version, and agent harness.</li>
         <li>Click <strong>Register Agent</strong>. You are redirected to the new agent's public profile page, which shows the assigned AICID (e.g. <code>AICID-5282-9748-4313-4513</code>).</li>
+        <li>No password is required. Management access is claimed later by verifying the operator email.</li>
       </ol>
 
-      <h3 id="ui-profile">2. View a profile</h3>
+      <h3 id="ui-manage">2. Manage a profile</h3>
+      <ol>
+        <li>Go to <a href="/auth/login">/auth/login</a> or click <strong>Manage</strong> in the top navigation.</li>
+        <li>Enter the same operator email used during registration.</li>
+        <li>Open the emailed one-time login link or paste the one-time code into the form.</li>
+        <li>After verification, AICID sets a short-lived HTTP-only browser session so you can edit your profiles at <a href="/manage">/manage</a>.</li>
+      </ol>
+
+      <h3 id="ui-profile">3. View a profile</h3>
       <p>
         Every registered agent has a public profile page at
         <code>https://aicid.net/agents/&lt;AICID&gt;</code>.
@@ -82,7 +92,7 @@
         <li>A <strong>JSON export</strong> link for machine-readable access.</li>
       </ul>
 
-      <h3 id="ui-search">3. Search the registry</h3>
+      <h3 id="ui-search">4. Search the registry</h3>
       <p>
         Go to <a href="/search-page">/search-page</a> and type any keyword, agent name, organization, or
         description term. Results show all public agents matching the query.
@@ -95,42 +105,40 @@
       <h2>Using the API</h2>
       <p>
         The AICID REST API lets you create and manage agent records programmatically.
-        All write operations require an access token obtained via the <code>/auth/token</code> endpoint.
+        All write operations require an access token obtained by verifying the operator email.
         Public read endpoints (profile lookup, search) do not require authentication.
       </p>
       <p>Base URL: <code>https://aicid.net</code></p>
 
       <h3 id="api-auth">1. Authentication</h3>
 
-      <h4>Register a user account</h4>
-      <pre><code>POST /auth/register
+      <h4>Request a one-time API login code</h4>
+      <pre><code>POST /auth/email/request
 Content-Type: application/json
 
 {
-  "email": "you@example.com",
-  "password": "yourpassword",
-  "full_name": "Your Name"
+  "email": "you@example.com"
 }</code></pre>
 
-      <h4>Obtain an access token</h4>
-      <pre><code>POST /auth/token
-Content-Type: application/x-www-form-urlencoded
+      <h4>Exchange the code for a bearer token</h4>
+      <pre><code>POST /auth/email/verify
+Content-Type: application/json
 
-username=you@example.com&amp;password=yourpassword</code></pre>
+{ "token": "&lt;one-time code&gt;" }</code></pre>
       <p>Response:</p>
       <pre><code>{
   "access_token": "&lt;JWT&gt;",
-  "refresh_token": "&lt;JWT&gt;",
-  "token_type": "bearer"
+  "token_type": "bearer",
+  "expires_in_seconds": 1800
 }</code></pre>
       <p>Include the token in all subsequent requests:</p>
       <pre><code>Authorization: Bearer &lt;access_token&gt;</code></pre>
 
-      <h4>Refresh an access token</h4>
-      <pre><code>POST /auth/refresh
-Content-Type: application/json
-
-{ "refresh_token": "&lt;refresh_token&gt;" }</code></pre>
+      <h4>Legacy password flow</h4>
+      <p>
+        The older <code>/auth/register</code>, <code>/auth/token</code>, and <code>/auth/refresh</code>
+        endpoints remain available during migration, but new integrations should prefer email verification.
+      </p>
 
       <h3 id="api-agents">2. Agents</h3>
 

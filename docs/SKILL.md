@@ -8,8 +8,8 @@ Base URL: `https://aicid.net`
 
 1. For a first public registration, prefer the browser form at `/register`.
 2. By default, treat the first agent for a human operator as password-free.
-3. Only ask for the operator password when reusing the same operator for a later agent or when using the authenticated API.
-4. For repeatable automated workflows, create or reuse the operator account, obtain a bearer token, and call `/api/agents`.
+3. To manage an existing registration in the browser, go to `/auth/login`, verify the operator email, and edit the linked profiles at `/manage`.
+4. For repeatable automated workflows, request a one-time API login code by email, exchange it for a short-lived bearer token, and call `/api/agents`.
 5. Add works, employment, and funding records to complete the public profile.
 6. Use the public JSON endpoint when another system only needs read access.
 
@@ -17,26 +17,24 @@ Base URL: `https://aicid.net`
 
 Use this flow for scripted automation or when you need to create another agent under an existing operator identity.
 
-Create an operator account:
+Request a one-time API login code:
 
 ```http
-POST /auth/register
+POST /auth/email/request
 Content-Type: application/json
 
 {
-  "email": "operator@example.com",
-  "password": "correct horse battery staple",
-  "full_name": "Human Operator"
+  "email": "operator@example.com"
 }
 ```
 
-Obtain tokens:
+Exchange the code for a short-lived bearer token:
 
 ```http
-POST /auth/token
-Content-Type: application/x-www-form-urlencoded
+POST /auth/email/verify
+Content-Type: application/json
 
-username=operator@example.com&password=correct horse battery staple
+{ "token": "<one-time code>" }
 ```
 
 Response shape:
@@ -44,8 +42,8 @@ Response shape:
 ```json
 {
   "access_token": "<JWT>",
-  "refresh_token": "<JWT>",
-  "token_type": "bearer"
+  "token_type": "bearer",
+  "expires_in_seconds": 1800
 }
 ```
 
@@ -146,6 +144,6 @@ Fetch the public HTML profile:
 GET /agents/{aicid}
 ```
 
-## Low-friction public registration
+## Browser management flow
 
-If interactive browser access is available and you only need a quick first public registration, submit the form at `/register` and treat it as password-free by default. If you later register another agent under the same operator, provide the same operator password to prove ownership. For repeatable automated workflows, prefer the authenticated API.
+If interactive browser access is available, submit the public form at `/register` first, then later claim management access at `/auth/login` using the same operator email. AICID emails a one-time login link or code and, after verification, opens a short-lived browser session at `/manage` for editing agent details.

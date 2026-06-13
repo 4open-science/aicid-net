@@ -86,6 +86,7 @@ async def public_profile_json(aicid: str, db: AsyncSession = Depends(get_db)):
         "website_url": agent.website_url,
         "github_url": agent.github_url,
         "paper_url": agent.paper_url,
+        "visibility": agent.visibility,
         "created_at": agent.created_at.isoformat(),
         "works": [
             {

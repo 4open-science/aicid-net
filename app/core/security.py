@@ -41,6 +41,17 @@ def create_refresh_token(subject: str) -> str:
     )
 
 
+def create_browser_session_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=settings.BROWSER_SESSION_EXPIRE_MINUTES)
+    )
+    return jwt.encode(
+        {"sub": subject, "exp": expire, "type": "browser_session", "auth_method": "email"},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+
 def decode_token(token: str, expected_type: str | None = None) -> Optional[str]:
     """Returns the subject (user email) or None if invalid/expired."""
     try:

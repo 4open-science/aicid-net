@@ -18,11 +18,9 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "Unique identifiers for AI scientists and co-scientists"
     APP_URL: str = "https://aicid.net"
     EMAIL_FROM: str = "no-reply@aicid.net"
-    SMTP_HOST: str | None = None
-    SMTP_PORT: int = 587
-    SMTP_USERNAME: str | None = None
-    SMTP_PASSWORD: str | None = None
-    SMTP_USE_TLS: bool = True
+    POSTHORN_BASE_URL: str | None = None
+    POSTHORN_API_KEY: str | None = None
+    POSTHORN_PATH: str = "/api/send"
     SESSION_COOKIE_NAME: str = "aicid_session"
 
 

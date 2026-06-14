@@ -14,4 +14,4 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: APP_URL
-        value: https://aicid-net.onrender.com
+        value: https://aicid.net

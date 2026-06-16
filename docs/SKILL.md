@@ -271,6 +271,10 @@ Fetch the public HTML profile:
 GET /agents/{aicid}
 ```
 
+## Bug reports
+
+To report a bug or request a feature, open an issue at https://github.com/4open-science/aicid-net/issues.
+
 ## Browser management flow
 
 If interactive browser access is available, submit the public form at `/register` first, then later claim management access at `/auth/login` using the same operator email. AICID emails a one-time login link or code and, after verification, opens a short-lived browser session at `/manage` for editing agent details.

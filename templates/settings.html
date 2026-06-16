@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Settings — AICID{% endblock %}
+
+{% block content %}
+<div class="container manage-page">
+  <div class="manage-header">
+    <div>
+      <h1>Account Settings</h1>
+      <p>Signed in as <strong>{{ user.email }}</strong>.</p>
+    </div>
+    <div style="display:flex;gap:0.75rem;align-items:center">
+      <a href="/manage" class="btn btn-outline-dark">Back to dashboard</a>
+      <form method="post" action="/auth/logout">
+        <button type="submit" class="btn btn-outline-dark">Sign Out</button>
+      </form>
+    </div>
+  </div>
+
+  <section class="manage-card" style="margin-bottom:2rem">
+    <div class="manage-card-header">
+      <h2>SSH Public Keys</h2>
+    </div>
+    <p style="margin:0 0 1rem">
+      SSH keys allow you to authenticate API requests without a bearer token by signing
+      HTTP requests (RFC 9421). The <code>keyid</code> is your key's SHA-256 fingerprint
+      (<code>ssh-keygen -lf your_key.pub</code>).
+    </p>
+
+    {% if error %}
+    <div class="form-error" style="margin-bottom:1rem">{{ error }}</div>
+    {% endif %}
+
+    {% if ssh_keys %}
+    <table style="width:100%;border-collapse:collapse;margin-bottom:1.5rem">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid #e0e0e0">
+          <th style="padding:0.5rem 0.75rem">Label</th>
+          <th style="padding:0.5rem 0.75rem">Fingerprint</th>
+          <th style="padding:0.5rem 0.75rem">Added</th>
+          <th style="padding:0.5rem 0.75rem">Last used</th>
+          <th style="padding:0.5rem 0.75rem"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in ssh_keys %}
+        <tr style="border-bottom:1px solid #f0f0f0">
+          <td style="padding:0.5rem 0.75rem">{{ key.label }}</td>
+          <td style="padding:0.5rem 0.75rem;font-family:monospace;font-size:0.8rem">{{ key.key_fingerprint }}</td>
+          <td style="padding:0.5rem 0.75rem;font-size:0.85rem">{{ key.created_at.strftime('%Y-%m-%d') }}</td>
+          <td style="padding:0.5rem 0.75rem;font-size:0.85rem">
+            {% if key.last_used_at %}{{ key.last_used_at.strftime('%Y-%m-%d') }}{% else %}Never{% endif %}
+          </td>
+          <td style="padding:0.5rem 0.75rem">
+            <form method="post" action="/manage/settings/ssh-keys/{{ key.id }}/delete"
+                  onsubmit="return confirm('Remove this SSH key?')">
+              <button type="submit" class="btn btn-outline-dark" style="font-size:0.8rem;padding:0.2rem 0.6rem">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state" style="margin-bottom:1.5rem">No SSH keys registered yet.</p>
+    {% endif %}
+
+    <details>
+      <summary style="cursor:pointer;font-weight:600;margin-bottom:0.75rem">Add a new SSH key</summary>
+      <form method="post" action="/manage/settings/ssh-keys/add" style="margin-top:0.75rem">
+        <div class="manage-fields">
+          <div class="form-group">
+            <label for="key-label">Label</label>
+            <input id="key-label" name="label" placeholder="e.g. my-laptop" required>
+          </div>
+          <div class="form-group form-group-wide">
+            <label for="key-value">Public key</label>
+            <textarea id="key-value" name="public_key" rows="3"
+              placeholder="ssh-ed25519 AAAA... user@host" required
+              style="font-family:monospace;font-size:0.85rem"></textarea>
+            <small style="color:#666">Paste the contents of your <code>~/.ssh/id_ed25519.pub</code> (or equivalent).</small>
+          </div>
+        </div>
+        <div class="manage-card-actions">
+          <button type="submit" class="btn btn-primary">Add SSH key</button>
+        </div>
+      </form>
+    </details>
+  </section>
+
+  <section class="manage-card">
+    <div class="manage-card-header">
+      <h2>Using SSH key authentication</h2>
+    </div>
+    <p>Sign API requests with your SSH private key. Include these headers on every request:</p>
+    <pre style="background:#f6f8fa;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem"><code>Signature-Input: sig1=("@method" "@path" "@authority" "date");keyid="&lt;YOUR_FINGERPRINT&gt;";alg="ed25519";created=&lt;UNIX_TIMESTAMP&gt;
+Signature: sig1=:&lt;BASE64_SIGNATURE&gt;:
+Date: &lt;RFC7231_DATE&gt;</code></pre>
+    <p>For <code>POST</code>/<code>PUT</code>/<code>PATCH</code> requests also include:</p>
+    <pre style="background:#f6f8fa;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem"><code>Content-Digest: sha-256=:&lt;BASE64_SHA256_OF_BODY&gt;:</code></pre>
+    <p style="font-size:0.9rem">
+      The signature covers the <strong>RFC 9421 signature base</strong> constructed from the listed components.
+      See <a href="/docs">the docs</a> or <a href="https://www.rfc-editor.org/rfc/rfc9421" target="_blank">RFC 9421</a> for details.
+    </p>
+  </section>
+</div>
+{% endblock %}

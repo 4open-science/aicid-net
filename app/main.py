@@ -14,8 +14,9 @@ import app.models.employment  # noqa: F401
 import app.models.funding  # noqa: F401
 import app.models.oauth  # noqa: F401
 import app.models.auth_challenge  # noqa: F401
+import app.models.ssh_key  # noqa: F401
 
-from app.routers import auth, agents, works, employment, funding, search, public, oauth, manage  # noqa: F401
+from app.routers import auth, agents, works, employment, funding, search, public, oauth, manage, ssh_keys  # noqa: F401
 
 
 @asynccontextmanager
@@ -47,6 +48,7 @@ application.include_router(funding.router, prefix="/api/agents", tags=["funding"
 application.include_router(search.router, tags=["search"])
 application.include_router(oauth.router, prefix="/oauth", tags=["oauth"])
 application.include_router(manage.router, tags=["manage"])
+application.include_router(ssh_keys.router, prefix="/api/account", tags=["ssh-keys"])
 application.include_router(public.router, tags=["public"])
 
 # Alias for uvicorn entrypoint and imports

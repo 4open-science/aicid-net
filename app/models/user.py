@@ -19,3 +19,4 @@ class User(Base):
 
     agents = relationship("Agent", back_populates="owner", cascade="all, delete-orphan")
     oauth_clients = relationship("OAuthClient", back_populates="owner", cascade="all, delete-orphan")
+    ssh_keys = relationship("SSHKey", back_populates="owner", cascade="all, delete-orphan")

@@ -6,9 +6,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.core.http_signature import compute_fingerprint
 from app.core.security import decode_token
 from app.database import get_db
 from app.models.agent import Agent
+from app.models.ssh_key import SSHKey
 from app.models.user import User
 from app.templating import templates
 
@@ -97,3 +99,80 @@ async def update_agent_from_browser(
 
     await db.commit()
     return RedirectResponse(url=f"/manage?updated={aicid}", status_code=303)
+
+
+@router.get("/manage/settings", response_class=HTMLResponse)
+async def settings_page(
+    request: Request,
+    error: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await _get_browser_user(request, db)
+    if user is None:
+        return _login_redirect("/manage/settings")
+
+    result = await db.execute(
+        select(SSHKey).where(SSHKey.user_id == user.id).order_by(SSHKey.created_at.desc())
+    )
+    ssh_keys = result.scalars().all()
+    return templates.TemplateResponse(
+        "settings.html",
+        {"request": request, "user": user, "ssh_keys": ssh_keys, "error": error},
+    )
+
+
+@router.post("/manage/settings/ssh-keys/add")
+async def add_ssh_key_browser(
+    request: Request,
+    label: str = Form(...),
+    public_key: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+):
+    user = await _get_browser_user(request, db)
+    if user is None:
+        return _login_redirect("/manage/settings")
+
+    public_key = public_key.strip()
+    parts = public_key.split()
+    allowed_types = ("ssh-ed25519", "ssh-rsa", "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp521")
+    if len(parts) < 2 or parts[0] not in allowed_types:
+        return RedirectResponse(url="/manage/settings?error=Invalid+SSH+public+key+format", status_code=303)
+
+    try:
+        fingerprint = compute_fingerprint(public_key)
+    except Exception:
+        return RedirectResponse(url="/manage/settings?error=Could+not+parse+public+key", status_code=303)
+
+    existing = await db.execute(select(SSHKey).where(SSHKey.key_fingerprint == fingerprint))
+    if existing.scalar_one_or_none() is not None:
+        return RedirectResponse(url="/manage/settings?error=A+key+with+this+fingerprint+already+exists", status_code=303)
+
+    db.add(SSHKey(
+        user_id=user.id,
+        label=label.strip(),
+        public_key=public_key,
+        key_fingerprint=fingerprint,
+        is_active=True,
+    ))
+    await db.commit()
+    return RedirectResponse(url="/manage/settings", status_code=303)
+
+
+@router.post("/manage/settings/ssh-keys/{key_id}/delete")
+async def delete_ssh_key_browser(
+    request: Request,
+    key_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await _get_browser_user(request, db)
+    if user is None:
+        return _login_redirect("/manage/settings")
+
+    result = await db.execute(
+        select(SSHKey).where(SSHKey.id == key_id, SSHKey.user_id == user.id)
+    )
+    key = result.scalar_one_or_none()
+    if key:
+        await db.delete(key)
+        await db.commit()
+    return RedirectResponse(url="/manage/settings", status_code=303)

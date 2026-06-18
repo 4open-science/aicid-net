@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
@@ -38,6 +39,12 @@ application = FastAPI(
 )
 
 application.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@application.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/favicon.ico")
+
 
 application.include_router(auth.router, prefix="/auth", tags=["auth"])
 application.include_router(agents.router, prefix="/api/agents", tags=["agents"])

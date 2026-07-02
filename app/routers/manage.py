@@ -1,6 +1,8 @@
-from urllib.parse import quote
+import secrets
+from urllib.parse import quote, urlencode
 
-from fastapi import APIRouter, Depends, Form, Request
+import httpx
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,9 +47,9 @@ async def manage_dashboard(
     result = await db.execute(select(Agent).where(Agent.owner_id == user.id).order_by(Agent.created_at.desc()))
     agents = result.scalars().all()
     return templates.TemplateResponse(
+        request,
         "manage.html",
         {
-            "request": request,
             "user": user,
             "agents": agents,
             "updated": updated,
@@ -103,10 +105,81 @@ async def update_agent_from_browser(
     return RedirectResponse(url=f"/manage?updated={aicid}", status_code=303)
 
 
+_ORCID_AUTH_URL = "https://orcid.org/oauth/authorize"
+_ORCID_TOKEN_URL = "https://orcid.org/oauth/token"
+
+
+@router.get("/manage/orcid/connect")
+async def orcid_connect(request: Request, db: AsyncSession = Depends(get_db)):
+    user = await _get_browser_user(request, db)
+    if user is None:
+        return _login_redirect("/manage/settings")
+    if not settings.ORCID_CLIENT_ID:
+        return RedirectResponse(url="/manage/settings?error=ORCID+not+configured", status_code=303)
+
+    state = secrets.token_urlsafe(16)
+    params = {
+        "client_id": settings.ORCID_CLIENT_ID,
+        "response_type": "code",
+        "scope": "/authenticate",
+        "redirect_uri": settings.ORCID_REDIRECT_URI,
+        "state": state,
+    }
+    response = RedirectResponse(url=f"{_ORCID_AUTH_URL}?{urlencode(params)}", status_code=302)
+    response.set_cookie("orcid_state", state, httponly=True, samesite="lax", max_age=600)
+    return response
+
+
+@router.get("/manage/orcid/callback")
+async def orcid_callback(
+    request: Request,
+    code: str = Query(...),
+    state: str = Query(""),
+    db: AsyncSession = Depends(get_db),
+):
+    user = await _get_browser_user(request, db)
+    if user is None:
+        return _login_redirect("/manage/settings")
+
+    expected_state = request.cookies.get("orcid_state", "")
+    if not state or state != expected_state:
+        return RedirectResponse(url="/manage/settings?error=Invalid+ORCID+state", status_code=303)
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            _ORCID_TOKEN_URL,
+            data={
+                "client_id": settings.ORCID_CLIENT_ID,
+                "client_secret": settings.ORCID_CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": settings.ORCID_REDIRECT_URI,
+            },
+            headers={"Accept": "application/json"},
+        )
+
+    if resp.status_code != 200:
+        return RedirectResponse(url="/manage/settings?error=ORCID+verification+failed", status_code=303)
+
+    data = resp.json()
+    orcid_id = data.get("orcid")
+    if not orcid_id:
+        return RedirectResponse(url="/manage/settings?error=ORCID+verification+failed", status_code=303)
+
+    user.orcid_id = orcid_id
+    user.orcid_verified = True
+    await db.commit()
+
+    response = RedirectResponse(url="/manage/settings?orcid=verified", status_code=303)
+    response.delete_cookie("orcid_state")
+    return response
+
+
 @router.get("/manage/settings", response_class=HTMLResponse)
 async def settings_page(
     request: Request,
     error: str | None = None,
+    orcid: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     user = await _get_browser_user(request, db)
@@ -118,8 +191,15 @@ async def settings_page(
     )
     ssh_keys = result.scalars().all()
     return templates.TemplateResponse(
+        request,
         "settings.html",
-        {"request": request, "user": user, "ssh_keys": ssh_keys, "error": error},
+        {
+            "user": user,
+            "ssh_keys": ssh_keys,
+            "error": error,
+            "orcid_verified": orcid == "verified",
+            "orcid_configured": bool(settings.ORCID_CLIENT_ID),
+        },
     )
 
 

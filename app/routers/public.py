@@ -21,9 +21,23 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _SKILL_DOC_PATH = _PROJECT_ROOT / "docs" / "SKILL.md"
 
 
+def _normalized_name(value: str | None) -> str:
+    return " ".join((value or "").split()).casefold()
+
+
+def _verified_operator_orcid_url(agent: Agent, owner: User | None) -> str | None:
+    if owner is None or not owner.orcid_verified or not owner.orcid_id:
+        return None
+    if not _normalized_name(agent.human_operator):
+        return None
+    if _normalized_name(agent.human_operator) != _normalized_name(owner.full_name):
+        return None
+    return f"https://orcid.org/{owner.orcid_id}"
+
+
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    return templates.TemplateResponse(request, "home.html", {})
 
 
 @router.get("/SKILL.md", response_class=FileResponse)
@@ -46,14 +60,20 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
         await db.execute(select(Funding).where(Funding.agent_id == agent.id))
     ).scalars().all()
 
+    owner = (await db.execute(select(User).where(User.id == agent.owner_id))).scalar_one_or_none()
+
+    verified_operator_orcid_url = _verified_operator_orcid_url(agent, owner)
+
     return templates.TemplateResponse(
+        request,
         "profile.html",
         {
-            "request": request,
             "agent": agent,
             "works": works,
             "employments": employments,
             "fundings": fundings,
+            "orcid_verified": verified_operator_orcid_url is not None,
+            "operator_orcid_url": verified_operator_orcid_url or agent.operator_orcid,
         },
     )
 
@@ -132,7 +152,7 @@ async def _unique_aicid(db: AsyncSession) -> str:
 
 @router.get("/register", response_class=HTMLResponse)
 async def register_form(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request, "error": None, "values": {}})
+    return templates.TemplateResponse(request, "register.html", {"error": None, "values": {}})
 
 
 @router.post("/register", response_class=HTMLResponse)
@@ -157,8 +177,9 @@ async def register_submit(
 
     if not human_operator or not human_operator.strip():
         return templates.TemplateResponse(
+            request,
             "register.html",
-            {"request": request, "error": "Operator name is required.", "values": values},
+            {"error": "Operator name is required.", "values": values},
             status_code=422,
         )
 
@@ -193,7 +214,7 @@ async def register_submit(
 
 @router.get("/docs", response_class=HTMLResponse)
 async def docs_page(request: Request):
-    return templates.TemplateResponse("docs.html", {"request": request})
+    return templates.TemplateResponse(request, "docs.html", {})
 
 
 @router.get("/search-page", response_class=HTMLResponse)
@@ -231,5 +252,5 @@ async def search_page(
         latest_agents = result.scalars().all()
 
     return templates.TemplateResponse(
-        "search.html", {"request": request, "q": q or "", "agents": agents, "latest_agents": latest_agents}
+        request, "search.html", {"q": q or "", "agents": agents, "latest_agents": latest_agents}
     )

@@ -87,6 +87,25 @@
     </details>
   </section>
 
+  <section class="manage-card" style="margin-bottom:2rem">
+    <div class="manage-card-header">
+      <h2>ORCID Identity</h2>
+    </div>
+    {% if user.orcid_verified %}
+    <p style="margin:0 0 1rem">
+      <strong style="color:#a6ce39">&#10003; ORCID Verified</strong> — your account is linked to ORCID iD
+      <a href="https://orcid.org/{{ user.orcid_id }}" target="_blank" rel="noopener">{{ user.orcid_id }}</a>.
+    </p>
+    {% elif orcid_verified %}
+    <p style="margin:0 0 1rem;color:#2e7d32"><strong>&#10003; ORCID successfully verified!</strong> Your profile will now show the ORCID Verified badge.</p>
+    {% elif orcid_configured %}
+    <p style="margin:0 0 1rem">Connect your ORCID account to display a verified badge on your agent profiles.</p>
+    <a href="/manage/orcid/connect" class="btn btn-primary">Connect ORCID</a>
+    {% else %}
+    <p style="margin:0;color:#666">ORCID integration is not configured on this server.</p>
+    {% endif %}
+  </section>
+
   <section class="manage-card">
     <div class="manage-card-header">
       <h2>Using SSH key authentication</h2>

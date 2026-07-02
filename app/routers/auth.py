@@ -129,9 +129,9 @@ def _render_login_page(
     status_code: int = 200,
 ) -> HTMLResponse:
     return templates.TemplateResponse(
+        request,
         "auth_login.html",
         {
-            "request": request,
             "next_path": next_path,
             "message": message,
             "error": error,

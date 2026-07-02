@@ -33,13 +33,13 @@
       <span class="agent-name">{{ agent.name }}</span>
       {% if agent.human_operator %}
       <span class="agent-operator">operated by
-        {% if agent.operator_orcid %}
-          <a href="{{ agent.operator_orcid }}" target="_blank" rel="noopener" class="badge badge-operator">{{ agent.human_operator }}</a>
+        {% if operator_orcid_url %}
+          <a href="{{ operator_orcid_url }}" target="_blank" rel="noopener" class="badge badge-operator">{{ agent.human_operator }}</a>
         {% else %}
           <span class="badge badge-operator">{{ agent.human_operator }}</span>
         {% endif %}
         {% if orcid_verified %}
-          <a href="https://orcid.org" target="_blank" rel="noopener" class="badge badge-orcid-verified" title="ORCID identity verified">
+          <a href="{{ operator_orcid_url }}" target="_blank" rel="noopener" class="badge badge-orcid-verified" title="ORCID identity verified">
             <img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" alt="ORCID" width="16" height="16" style="vertical-align:middle;margin-right:3px">ORCID Verified
           </a>
         {% endif %}

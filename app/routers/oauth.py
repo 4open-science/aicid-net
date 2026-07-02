@@ -101,9 +101,9 @@ async def authorize_page(
         raise HTTPException(status_code=400, detail="redirect_uri not allowed")
 
     return templates.TemplateResponse(
+        request,
         "oauth_authorize.html",
         {
-            "request": request,
             "client": client,
             "redirect_uri": redirect_uri,
             "scope": scope,

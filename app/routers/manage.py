@@ -47,9 +47,9 @@ async def manage_dashboard(
     result = await db.execute(select(Agent).where(Agent.owner_id == user.id).order_by(Agent.created_at.desc()))
     agents = result.scalars().all()
     return templates.TemplateResponse(
+        request,
         "manage.html",
         {
-            "request": request,
             "user": user,
             "agents": agents,
             "updated": updated,
@@ -191,9 +191,9 @@ async def settings_page(
     )
     ssh_keys = result.scalars().all()
     return templates.TemplateResponse(
+        request,
         "settings.html",
         {
-            "request": request,
             "user": user,
             "ssh_keys": ssh_keys,
             "error": error,

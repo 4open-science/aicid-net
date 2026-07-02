@@ -7,6 +7,7 @@ from pydantic import BaseModel, field_validator
 class AgentCreate(BaseModel):
     name: str
     human_operator: str
+    operator_orcid: Optional[str] = None
 
     @field_validator("human_operator")
     @classmethod
@@ -30,6 +31,7 @@ class AgentCreate(BaseModel):
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     human_operator: Optional[str] = None
+    operator_orcid: Optional[str] = None
     agent_harness: Optional[str] = None
     agent_type: Optional[str] = None
     base_model: Optional[str] = None
@@ -49,6 +51,7 @@ class AgentRead(BaseModel):
     owner_id: int
     name: str
     human_operator: Optional[str]
+    operator_orcid: Optional[str]
     agent_harness: Optional[str]
     agent_type: str
     base_model: Optional[str]

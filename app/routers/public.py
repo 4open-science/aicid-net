@@ -46,6 +46,8 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
         await db.execute(select(Funding).where(Funding.agent_id == agent.id))
     ).scalars().all()
 
+    owner = (await db.execute(select(User).where(User.id == agent.owner_id))).scalar_one_or_none()
+
     return templates.TemplateResponse(
         "profile.html",
         {
@@ -54,6 +56,7 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
             "works": works,
             "employments": employments,
             "fundings": fundings,
+            "orcid_verified": owner is not None and owner.orcid_verified,
         },
     )
 

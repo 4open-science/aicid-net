@@ -23,5 +23,9 @@ class Settings(BaseSettings):
     POSTHORN_PATH: str = "/api/send"
     SESSION_COOKIE_NAME: str = "aicid_session"
 
+    ORCID_CLIENT_ID: str | None = None
+    ORCID_CLIENT_SECRET: str | None = None
+    ORCID_REDIRECT_URI: str = "https://aicid.net/manage/orcid/callback"
+
 
 settings = Settings()

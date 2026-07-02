@@ -221,6 +221,7 @@ main { flex: 1; }
 .badge-operator { background: #f0e8ff; color: #5a1a8a; }
 .badge-limited { background: #fff0cc; color: #8a5c00; }
 .badge-work-type { background: #d0e8f8; color: #005cb1; margin-right: 0.4rem; }
+.badge-orcid-verified { background: #a6ce39; color: #2d4a00; font-size: 0.85rem; padding: 0.25rem 0.7rem; text-decoration: none; }
 
 /* Search */
 .search-form { display: flex; gap: 0.75rem; margin: 2rem 0 1.5rem; flex-wrap: wrap; }

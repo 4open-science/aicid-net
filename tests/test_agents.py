@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from httpx import AsyncClient
 
@@ -32,6 +34,22 @@ async def test_create_agent(client: AsyncClient, auth_headers: dict):
     data = resp.json()
     assert data["name"] == "ResearchBot"
     assert validate_aicid(data["aicid"])
+
+
+@pytest.mark.asyncio
+async def test_create_agent_sends_notification_email(client: AsyncClient, auth_headers: dict):
+    with patch("app.routers.agents.send_email") as mock_send:
+        resp = await client.post(
+            "/api/agents",
+            json={"name": "NotifyBot", "human_operator": "Alice"},
+            headers=auth_headers,
+        )
+    assert resp.status_code == 201
+    mock_send.assert_called_once()
+    call_args = mock_send.call_args
+    assert call_args[0][0] == "team@aicid.net"
+    assert "NotifyBot" in call_args[0][1]
+    assert "NotifyBot" in call_args[0][2]
 
 
 @pytest.mark.asyncio

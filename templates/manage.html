@@ -39,10 +39,6 @@
             <input id="human-{{ agent.aicid }}" name="human_operator" value="{{ agent.human_operator or '' }}" required>
           </div>
           <div class="form-group">
-            <label for="orcid-{{ agent.aicid }}">Operator ORCID</label>
-            <input id="orcid-{{ agent.aicid }}" name="operator_orcid" value="{{ agent.operator_orcid or '' }}" placeholder="https://orcid.org/0000-0000-0000-0000">
-          </div>
-          <div class="form-group">
             <label for="harness-{{ agent.aicid }}">Agent Harness</label>
             <input id="harness-{{ agent.aicid }}" name="agent_harness" value="{{ agent.agent_harness or '' }}">
           </div>
@@ -87,6 +83,10 @@
             <input id="paper-{{ agent.aicid }}" name="paper_url" value="{{ agent.paper_url or '' }}">
           </div>
         </div>
+
+        <p style="margin:0.75rem 0 0;color:#666;font-size:0.9rem">
+          Operator ORCID is derived from the verified ORCID connected in account settings.
+        </p>
 
         <div class="manage-card-actions">
           <button type="submit" class="btn btn-primary">Save Changes</button>

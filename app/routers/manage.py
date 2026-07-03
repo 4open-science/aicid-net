@@ -63,7 +63,6 @@ async def update_agent_from_browser(
     aicid: str,
     name: str = Form(...),
     human_operator: str = Form(...),
-    operator_orcid: str = Form(""),
     agent_harness: str = Form(""),
     agent_type: str = Form("autonomous_agent"),
     base_model: str = Form(""),
@@ -88,7 +87,6 @@ async def update_agent_from_browser(
 
     agent.name = name.strip()
     agent.human_operator = human_operator.strip()
-    agent.operator_orcid = operator_orcid.strip() or None
     agent.agent_harness = agent_harness.strip() or None
     agent.agent_type = agent_type.strip() or "autonomous_agent"
     agent.base_model = base_model.strip() or None

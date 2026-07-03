@@ -44,7 +44,6 @@ async def test_public_profile_shows_orcid_verified_badge_for_verified_operator(
         json={
             "name": "VerifiedBot",
             "human_operator": "Test User",
-            "operator_orcid": "https://orcid.org/0000-0000-0000-0000",
             "visibility": "public",
         },
         headers=auth_headers,
@@ -90,3 +89,26 @@ async def test_public_profile_hides_orcid_verified_badge_for_different_operator(
     resp = await client.get(f"/agents/{aicid}")
     assert resp.status_code == 200
     assert "ORCID Verified" not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_public_profile_does_not_link_unverified_manual_operator_orcid(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "ManualOrcidBot",
+            "human_operator": "Test User",
+            "operator_orcid": "https://orcid.org/0000-0000-0000-0000",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    resp = await client.get(f"/agents/{aicid}")
+    assert resp.status_code == 200
+    assert "ORCID Verified" not in resp.text
+    assert 'href="https://orcid.org/0000-0000-0000-0000"' not in resp.text

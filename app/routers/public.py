@@ -73,7 +73,7 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
             "employments": employments,
             "fundings": fundings,
             "orcid_verified": verified_operator_orcid_url is not None,
-            "operator_orcid_url": verified_operator_orcid_url or agent.operator_orcid,
+            "operator_orcid_url": verified_operator_orcid_url,
         },
     )
 

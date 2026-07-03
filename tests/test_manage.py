@@ -48,6 +48,9 @@ async def test_browser_verify_link_sets_session_cookie_and_allows_manage(client:
     assert manage_resp.status_code == 200
     assert aicid.encode() in manage_resp.content
     assert b"CookieBot" in manage_resp.content
+    assert b'name="operator_orcid"' not in manage_resp.content
+    assert b'id="orcid-' not in manage_resp.content
+    assert b"derived from the verified ORCID connected in account settings" in manage_resp.content
 
 
 @pytest.mark.asyncio

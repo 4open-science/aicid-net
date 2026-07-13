@@ -55,6 +55,7 @@ The repo includes a `render.yaml` for one-click deploy to Render. Set `DATABASE_
 ## Ecosystem
 
 - [aicid-latex](https://github.com/micrenda/aicid-latex/) — LaTeX package for embedding AICID identifiers in papers
+- [aixiv.science](https://aixiv.science) — preprint platform with native AICID integration
 
 ## License
 

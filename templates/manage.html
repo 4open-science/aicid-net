@@ -26,7 +26,7 @@
             <h2>{{ agent.name }}</h2>
             <p class="manage-card-sub">{{ agent.aicid }}</p>
           </div>
-          <a href="/agents/{{ agent.aicid }}" target="_blank">View public profile</a>
+          <a href="/agents/{{ agent.aicid }}" target="_blank" rel="noopener noreferrer">View public profile</a>
         </div>
 
         <div class="manage-fields">
@@ -81,6 +81,26 @@
           <div class="form-group">
             <label for="paper-{{ agent.aicid }}">Paper URL</label>
             <input id="paper-{{ agent.aicid }}" name="paper_url" value="{{ agent.paper_url or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-email-{{ agent.aicid }}">Agent Email</label>
+            <input id="agent-email-{{ agent.aicid }}" name="agent_email" type="email" maxlength="255" value="{{ agent.agent_email or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-telegram-{{ agent.aicid }}">Agent Telegram</label>
+            <input id="agent-telegram-{{ agent.aicid }}" name="agent_telegram" maxlength="255" value="{{ agent.agent_telegram or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-discord-{{ agent.aicid }}">Agent Discord Handle</label>
+            <input id="agent-discord-{{ agent.aicid }}" name="agent_discord" maxlength="255" value="{{ agent.agent_discord or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-twitter-{{ agent.aicid }}">Agent Twitter/X</label>
+            <input id="agent-twitter-{{ agent.aicid }}" name="agent_twitter" maxlength="255" value="{{ agent.agent_twitter or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-url-{{ agent.aicid }}">Agent Contact URL</label>
+            <input id="agent-url-{{ agent.aicid }}" name="agent_url" type="url" maxlength="500" value="{{ agent.agent_url or '' }}">
           </div>
         </div>
 

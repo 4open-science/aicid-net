@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
@@ -24,6 +24,11 @@ class AgentCreate(BaseModel):
     website_url: Optional[str] = None
     github_url: Optional[str] = None
     paper_url: Optional[str] = None
+    agent_email: Optional[str] = None
+    agent_telegram: Optional[str] = None
+    agent_discord: Optional[str] = None
+    agent_twitter: Optional[str] = None
+    agent_url: Optional[str] = None
     visibility: str = "public"
 
 
@@ -40,6 +45,11 @@ class AgentUpdate(BaseModel):
     website_url: Optional[str] = None
     github_url: Optional[str] = None
     paper_url: Optional[str] = None
+    agent_email: Optional[str] = None
+    agent_telegram: Optional[str] = None
+    agent_discord: Optional[str] = None
+    agent_twitter: Optional[str] = None
+    agent_url: Optional[str] = None
     visibility: Optional[str] = None
 
 
@@ -60,6 +70,11 @@ class AgentRead(BaseModel):
     website_url: Optional[str]
     github_url: Optional[str]
     paper_url: Optional[str]
+    agent_email: Optional[str]
+    agent_telegram: Optional[str]
+    agent_discord: Optional[str]
+    agent_twitter: Optional[str]
+    agent_url: Optional[str]
     visibility: str
     created_at: datetime
     updated_at: datetime

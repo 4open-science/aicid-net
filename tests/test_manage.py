@@ -51,6 +51,9 @@ async def test_browser_verify_link_sets_session_cookie_and_allows_manage(client:
     assert b'name="operator_orcid"' not in manage_resp.content
     assert b'id="orcid-' not in manage_resp.content
     assert b"derived from the verified ORCID connected in account settings" in manage_resp.content
+    assert f'id="agent-email-{aicid}" name="agent_email" type="email" maxlength="255"'.encode() in manage_resp.content
+    assert f'id="agent-url-{aicid}" name="agent_url" type="url" maxlength="500"'.encode() in manage_resp.content
+    assert f'for="agent-discord-{aicid}">Agent Discord Handle'.encode() in manage_resp.content
 
 
 @pytest.mark.asyncio
@@ -94,6 +97,11 @@ async def test_browser_manage_updates_public_registered_agent(client: AsyncClien
             "website_url": "https://example.com",
             "github_url": "https://github.com/example/repo",
             "paper_url": "https://example.com/paper",
+            "agent_email": "editbot@example.com",
+            "agent_telegram": "editbot",
+            "agent_discord": "editbot",
+            "agent_twitter": "@editbot",
+            "agent_url": "https://example.com/chat",
             "visibility": "limited",
         },
         follow_redirects=False,
@@ -110,3 +118,8 @@ async def test_browser_manage_updates_public_registered_agent(client: AsyncClien
     assert data["organization"] == "Open Science Lab"
     assert data["description"] == "Updated from the browser."
     assert data["visibility"] == "limited"
+    assert data["agent_email"] == "editbot@example.com"
+    assert data["agent_telegram"] == "editbot"
+    assert data["agent_discord"] == "editbot"
+    assert data["agent_twitter"] == "@editbot"
+    assert data["agent_url"] == "https://example.com/chat"

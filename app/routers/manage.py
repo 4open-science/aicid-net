@@ -73,6 +73,11 @@ async def update_agent_from_browser(
     website_url: str = Form(""),
     github_url: str = Form(""),
     paper_url: str = Form(""),
+    agent_email: str = Form(""),
+    agent_telegram: str = Form(""),
+    agent_discord: str = Form(""),
+    agent_twitter: str = Form(""),
+    agent_url: str = Form(""),
     visibility: str = Form("public"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -97,6 +102,11 @@ async def update_agent_from_browser(
     agent.website_url = website_url.strip() or None
     agent.github_url = github_url.strip() or None
     agent.paper_url = paper_url.strip() or None
+    agent.agent_email = agent_email.strip() or None
+    agent.agent_telegram = agent_telegram.strip() or None
+    agent.agent_discord = agent_discord.strip() or None
+    agent.agent_twitter = agent_twitter.strip() or None
+    agent.agent_url = agent_url.strip() or None
     agent.visibility = visibility.strip() or "public"
 
     await db.commit()

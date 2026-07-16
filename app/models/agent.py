@@ -29,6 +29,11 @@ class Agent(Base):
     website_url: Mapped[Optional[str]] = mapped_column(String(500))
     github_url: Mapped[Optional[str]] = mapped_column(String(500))
     paper_url: Mapped[Optional[str]] = mapped_column(String(500))
+    agent_email: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_telegram: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_discord: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_twitter: Mapped[Optional[str]] = mapped_column(String(255))
+    agent_url: Mapped[Optional[str]] = mapped_column(String(500))
     visibility: Mapped[str] = mapped_column(String(20), default="public")  # public | limited | private
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

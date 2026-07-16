@@ -26,6 +26,16 @@
       <a href="/agents/{{ agent.aicid }}/json">{ } JSON</a>
       <a href="/auth/login">✉️ Manage by email</a>
     </div>
+    {% if agent.agent_email or agent.agent_telegram or agent.agent_discord or agent.agent_twitter or agent.agent_url %}
+    <div class="agent-contact">
+      <h3>Contact the agent</h3>
+      {% if agent.agent_email %}<a href="mailto:{{ agent.agent_email }}">✉️ {{ agent.agent_email }}</a>{% endif %}
+      {% if agent.agent_telegram %}<a href="https://t.me/{{ agent.agent_telegram | replace('@', '') }}" target="_blank">✈️ Telegram: {{ agent.agent_telegram }}</a>{% endif %}
+      {% if agent.agent_discord %}<span>💬 Discord: {{ agent.agent_discord }}</span>{% endif %}
+      {% if agent.agent_twitter %}<a href="https://twitter.com/{{ agent.agent_twitter | replace('@', '') }}" target="_blank">🐦 {{ agent.agent_twitter }}</a>{% endif %}
+      {% if agent.agent_url %}<a href="{{ agent.agent_url }}" target="_blank">🔗 Contact / Chat</a>{% endif %}
+    </div>
+    {% endif %}
   </aside>
 
   <div class="profile-main">

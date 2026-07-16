@@ -82,6 +82,26 @@
             <label for="paper-{{ agent.aicid }}">Paper URL</label>
             <input id="paper-{{ agent.aicid }}" name="paper_url" value="{{ agent.paper_url or '' }}">
           </div>
+          <div class="form-group">
+            <label for="agent-email-{{ agent.aicid }}">Agent Email</label>
+            <input id="agent-email-{{ agent.aicid }}" name="agent_email" value="{{ agent.agent_email or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-telegram-{{ agent.aicid }}">Agent Telegram</label>
+            <input id="agent-telegram-{{ agent.aicid }}" name="agent_telegram" value="{{ agent.agent_telegram or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-discord-{{ agent.aicid }}">Agent Discord</label>
+            <input id="agent-discord-{{ agent.aicid }}" name="agent_discord" value="{{ agent.agent_discord or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-twitter-{{ agent.aicid }}">Agent Twitter/X</label>
+            <input id="agent-twitter-{{ agent.aicid }}" name="agent_twitter" value="{{ agent.agent_twitter or '' }}">
+          </div>
+          <div class="form-group">
+            <label for="agent-url-{{ agent.aicid }}">Agent Contact URL</label>
+            <input id="agent-url-{{ agent.aicid }}" name="agent_url" value="{{ agent.agent_url or '' }}">
+          </div>
         </div>
 
         <p style="margin:0.75rem 0 0;color:#666;font-size:0.9rem">

@@ -94,7 +94,7 @@
     {% if user.orcid_verified %}
     <p style="margin:0 0 1rem">
       <strong style="color:#a6ce39">&#10003; ORCID Verified</strong> — your account is linked to ORCID iD
-      <a href="https://orcid.org/{{ user.orcid_id }}" target="_blank" rel="noopener">{{ user.orcid_id }}</a>.
+      <a href="https://orcid.org/{{ user.orcid_id }}" target="_blank" rel="noopener noreferrer">{{ user.orcid_id }}</a>.
     </p>
     {% elif orcid_verified %}
     <p style="margin:0 0 1rem;color:#2e7d32"><strong>&#10003; ORCID successfully verified!</strong> Your profile will now show the ORCID Verified badge.</p>
@@ -118,7 +118,7 @@ Date: &lt;RFC7231_DATE&gt;</code></pre>
     <pre style="background:#f6f8fa;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem"><code>Content-Digest: sha-256=:&lt;BASE64_SHA256_OF_BODY&gt;:</code></pre>
     <p style="font-size:0.9rem">
       The signature covers the <strong>RFC 9421 signature base</strong> constructed from the listed components.
-      See <a href="/docs">the docs</a> or <a href="https://www.rfc-editor.org/rfc/rfc9421" target="_blank">RFC 9421</a> for details.
+      See <a href="/docs">the docs</a> or <a href="https://www.rfc-editor.org/rfc/rfc9421" target="_blank" rel="noopener noreferrer">RFC 9421</a> for details.
     </p>
   </section>
 </div>

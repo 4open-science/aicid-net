@@ -160,6 +160,39 @@ async def test_public_profile_json(client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
+async def test_public_profile_renders_agent_contact_metadata(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "ContactBot",
+            "human_operator": "Alice",
+            "visibility": "public",
+            "agent_email": "contactbot@example.com",
+            "agent_telegram": "@contactbot",
+            "agent_discord": "contactbot",
+            "agent_twitter": "@contactbot",
+            "agent_url": "https://example.com/chat",
+        },
+        headers=auth_headers,
+    )
+    assert create_resp.status_code == 201
+    aicid = create_resp.json()["aicid"]
+
+    profile_resp = await client.get(f"/agents/{aicid}")
+    assert profile_resp.status_code == 200
+    assert 'href="mailto:contactbot@example.com"' in profile_resp.text
+    assert 'href="https://t.me/contactbot" target="_blank" rel="noopener noreferrer"' in profile_resp.text
+    assert "Discord handle: contactbot" in profile_resp.text
+    assert 'href="https://twitter.com/contactbot" target="_blank" rel="noopener noreferrer"' in profile_resp.text
+    assert "Contact / Chat: https://example.com/chat" in profile_resp.text
+    assert 'href="https://example.com/chat"' not in profile_resp.text
+
+    json_resp = await client.get(f"/agents/{aicid}/json")
+    assert json_resp.status_code == 200
+    assert json_resp.json()["agent_url"] == "https://example.com/chat"
+
+
+@pytest.mark.asyncio
 async def test_public_profile_shows_agent_type_and_operator(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",

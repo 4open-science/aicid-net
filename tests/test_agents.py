@@ -107,6 +107,98 @@ async def test_update_agent(client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
+async def test_update_agent_operator_orcid(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "OrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": "0000-0002-1825-0097"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 200
+    assert update_resp.json()["operator_orcid"] == "https://orcid.org/0000-0002-1825-0097"
+
+    get_resp = await client.get(f"/api/agents/{aicid}", headers=auth_headers)
+    assert get_resp.json()["operator_orcid"] == "https://orcid.org/0000-0002-1825-0097"
+
+
+@pytest.mark.asyncio
+async def test_update_agent_accepts_operator_orcid_with_x_checksum(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "OrcidXBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": "https://orcid.org/0000-0002-1694-233x"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 200
+    assert update_resp.json()["operator_orcid"] == "https://orcid.org/0000-0002-1694-233X"
+
+
+@pytest.mark.asyncio
+async def test_update_agent_rejects_invalid_operator_orcid(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "InvalidOrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": "0000-0000-0000-0000"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_agent_can_clear_operator_orcid(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "ClearOrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+    await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": "https://orcid.org/0000-0002-1825-0097"},
+        headers=auth_headers,
+    )
+
+    clear_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": None},
+        headers=auth_headers,
+    )
+
+    assert clear_resp.status_code == 200
+    assert clear_resp.json()["operator_orcid"] is None
+
+
+@pytest.mark.asyncio
 async def test_delete_agent(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",

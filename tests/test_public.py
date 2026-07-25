@@ -101,14 +101,19 @@ async def test_public_profile_does_not_link_unverified_manual_operator_orcid(
         json={
             "name": "ManualOrcidBot",
             "human_operator": "Test User",
-            "operator_orcid": "https://orcid.org/0000-0000-0000-0000",
             "visibility": "public",
         },
         headers=auth_headers,
     )
     aicid = create_resp.json()["aicid"]
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"operator_orcid": "https://orcid.org/0000-0002-1825-0097"},
+        headers=auth_headers,
+    )
+    assert update_resp.status_code == 200
 
     resp = await client.get(f"/agents/{aicid}")
     assert resp.status_code == 200
     assert "ORCID Verified" not in resp.text
-    assert 'href="https://orcid.org/0000-0000-0000-0000"' not in resp.text
+    assert 'href="https://orcid.org/0000-0002-1825-0097"' not in resp.text

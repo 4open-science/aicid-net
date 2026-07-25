@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
+
+from app.core.orcid import normalize_orcid
 
 
 class AgentCreate(BaseModel):
@@ -35,6 +37,14 @@ class AgentCreate(BaseModel):
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     human_operator: Optional[str] = None
+    operator_orcid: Optional[str] = Field(
+        default=None,
+        title="Operator ORCID",
+        description=(
+            "Self-declared ORCID metadata. This does not grant ORCID Verified status, "
+            "which requires OAuth verification."
+        ),
+    )
     agent_harness: Optional[str] = None
     agent_type: Optional[str] = None
     base_model: Optional[str] = None
@@ -51,6 +61,11 @@ class AgentUpdate(BaseModel):
     agent_twitter: Optional[str] = None
     agent_url: Optional[str] = None
     visibility: Optional[str] = None
+
+    @field_validator("operator_orcid")
+    @classmethod
+    def normalize_operator_orcid(cls, value: Optional[str]) -> Optional[str]:
+        return normalize_orcid(value)
 
 
 class AgentRead(BaseModel):

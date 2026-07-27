@@ -107,6 +107,114 @@ async def test_update_agent(client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
+async def test_create_agent_with_orcid_unverified(client: AsyncClient, auth_headers: dict):
+    resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "OrcidBot",
+            "human_operator": "Alice",
+            "orcid_unverified": "0000-0002-1825-0097",
+        },
+        headers=auth_headers,
+    )
+
+    assert resp.status_code == 201
+    assert resp.json()["orcid_unverified"] == "https://orcid.org/0000-0002-1825-0097"
+
+
+@pytest.mark.asyncio
+async def test_update_agent_orcid_unverified(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "OrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"orcid_unverified": "0000-0002-1825-0097"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 200
+    assert update_resp.json()["orcid_unverified"] == "https://orcid.org/0000-0002-1825-0097"
+
+    get_resp = await client.get(f"/api/agents/{aicid}", headers=auth_headers)
+    assert get_resp.json()["orcid_unverified"] == "https://orcid.org/0000-0002-1825-0097"
+
+
+@pytest.mark.asyncio
+async def test_update_agent_accepts_orcid_unverified_with_x_checksum(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "OrcidXBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"orcid_unverified": "https://orcid.org/0000-0002-1694-233x"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 200
+    assert update_resp.json()["orcid_unverified"] == "https://orcid.org/0000-0002-1694-233X"
+
+
+@pytest.mark.asyncio
+async def test_update_agent_rejects_invalid_orcid_unverified(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "InvalidOrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    update_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"orcid_unverified": "0000-0000-0000-0000"},
+        headers=auth_headers,
+    )
+
+    assert update_resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_agent_can_clear_orcid_unverified(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "ClearOrcidBot", "human_operator": "Alice"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+    await client.patch(
+        f"/api/agents/{aicid}",
+        json={"orcid_unverified": "https://orcid.org/0000-0002-1825-0097"},
+        headers=auth_headers,
+    )
+
+    clear_resp = await client.patch(
+        f"/api/agents/{aicid}",
+        json={"orcid_unverified": None},
+        headers=auth_headers,
+    )
+
+    assert clear_resp.status_code == 200
+    assert clear_resp.json()["orcid_unverified"] is None
+
+
+@pytest.mark.asyncio
 async def test_delete_agent(client: AsyncClient, auth_headers: dict):
     create_resp = await client.post(
         "/api/agents",

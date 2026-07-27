@@ -74,6 +74,7 @@ async def public_profile(request: Request, aicid: str, db: AsyncSession = Depend
             "fundings": fundings,
             "orcid_verified": verified_operator_orcid_url is not None,
             "operator_orcid_url": verified_operator_orcid_url,
+            "orcid_unverified": agent.orcid_unverified,
         },
     )
 
@@ -98,6 +99,7 @@ async def public_profile_json(aicid: str, db: AsyncSession = Depends(get_db)):
         "name": agent.name,
         "agent_type": agent.agent_type,
         "human_operator": agent.human_operator,
+        "orcid_unverified": agent.orcid_unverified,
         "base_model": agent.base_model,
         "version": agent.version,
         "organization": agent.organization,

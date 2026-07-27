@@ -1,7 +1,15 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
+
+from app.core.orcid import normalize_orcid
+
+_ORCID_UNVERIFIED_DESCRIPTION = (
+    "Self-declared ORCID metadata, not verified by ORCID OAuth. This does not "
+    "grant ORCID Verified status or link this agent to an ORCID account; it is "
+    "only displayed as unverified."
+)
 
 
 class AgentCreate(BaseModel):
@@ -14,6 +22,9 @@ class AgentCreate(BaseModel):
         if not v or not v.strip():
             raise ValueError("human_operator is required")
         return v
+    orcid_unverified: Optional[str] = Field(
+        default=None, title="Unverified ORCID", description=_ORCID_UNVERIFIED_DESCRIPTION
+    )
     agent_harness: Optional[str] = None
     agent_type: str = "autonomous_agent"
     base_model: Optional[str] = None
@@ -31,10 +42,18 @@ class AgentCreate(BaseModel):
     agent_url: Optional[str] = None
     visibility: str = "public"
 
+    @field_validator("orcid_unverified")
+    @classmethod
+    def normalize_orcid_unverified(cls, value: Optional[str]) -> Optional[str]:
+        return normalize_orcid(value)
+
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     human_operator: Optional[str] = None
+    orcid_unverified: Optional[str] = Field(
+        default=None, title="Unverified ORCID", description=_ORCID_UNVERIFIED_DESCRIPTION
+    )
     agent_harness: Optional[str] = None
     agent_type: Optional[str] = None
     base_model: Optional[str] = None
@@ -52,6 +71,11 @@ class AgentUpdate(BaseModel):
     agent_url: Optional[str] = None
     visibility: Optional[str] = None
 
+    @field_validator("orcid_unverified")
+    @classmethod
+    def normalize_orcid_unverified(cls, value: Optional[str]) -> Optional[str]:
+        return normalize_orcid(value)
+
 
 class AgentRead(BaseModel):
     id: int
@@ -60,6 +84,7 @@ class AgentRead(BaseModel):
     name: str
     human_operator: Optional[str]
     operator_orcid: Optional[str]
+    orcid_unverified: Optional[str]
     agent_harness: Optional[str]
     agent_type: str
     base_model: Optional[str]

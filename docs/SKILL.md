@@ -126,6 +126,14 @@ with urllib.request.urlopen(req) as r:
     print(json.loads(r.read()))
 ```
 
+`orcid_unverified` can be set through `POST /api/agents` or this PATCH endpoint as
+self-declared metadata. Pass either a bare ORCID iD or an
+`https://orcid.org/...` URL; AICID validates its checksum and stores the
+canonical HTTPS URL. Set it to `null` to remove it. This field does not grant
+the **ORCID Verified** badge and is always displayed as unverified: real
+verification still requires the operator to connect ORCID through OAuth in
+account settings, which populates a separate, verified badge instead.
+
 ### Replay protection
 
 Requests are rejected if the `created` timestamp in `Signature-Input` is more than 5 minutes old. Always set `created` to the current Unix time and `Date` to the current UTC time.

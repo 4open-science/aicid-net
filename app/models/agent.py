@@ -17,6 +17,7 @@ class Agent(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     human_operator: Mapped[Optional[str]] = mapped_column(String(255))
     operator_orcid: Mapped[Optional[str]] = mapped_column(String(500))
+    orcid_unverified: Mapped[Optional[str]] = mapped_column(String(500))
     agent_harness: Mapped[Optional[str]] = mapped_column(String(255))
     agent_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="autonomous_agent"

@@ -112,3 +112,57 @@ async def test_public_profile_does_not_link_unverified_manual_operator_orcid(
     assert resp.status_code == 200
     assert "ORCID Verified" not in resp.text
     assert 'href="https://orcid.org/0000-0000-0000-0000"' not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_public_profile_shows_self_declared_orcid_as_unverified(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "SelfDeclaredOrcidBot",
+            "human_operator": "Test User",
+            "orcid_unverified": "0000-0002-1825-0097",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    resp = await client.get(f"/agents/{aicid}")
+    assert resp.status_code == 200
+    assert "ORCID Verified" not in resp.text
+    assert "ORCID (unverified)" in resp.text
+    assert 'href="https://orcid.org/0000-0002-1825-0097"' in resp.text
+
+
+@pytest.mark.asyncio
+async def test_public_profile_prefers_verified_badge_over_self_declared_orcid(
+    client: AsyncClient,
+    auth_headers: dict,
+    db_session,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "BothOrcidBot",
+            "human_operator": "Test User",
+            "orcid_unverified": "0000-0002-1694-233x",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    user = (await db_session.execute(select(User).where(User.email == "test@example.com"))).scalar_one()
+    user.full_name = "Test User"
+    user.orcid_id = "0000-0002-1825-0097"
+    user.orcid_verified = True
+    await db_session.commit()
+
+    resp = await client.get(f"/agents/{aicid}")
+    assert resp.status_code == 200
+    assert "ORCID Verified" in resp.text
+    assert "ORCID (unverified)" not in resp.text

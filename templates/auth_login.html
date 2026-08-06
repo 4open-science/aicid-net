@@ -13,7 +13,12 @@
     <div class="form-success">{{ message }}</div>
     {% endif %}
     {% if error %}
-    <div class="form-error">{{ error }}</div>
+    <div class="form-error">
+      {{ error }}
+      {% if used_at %}
+      <br><span class="form-hint">This link/code was already used on {{ used_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}. If that wasn't you, your mail provider's link-scanning security may have opened it first — try requesting a new login and using the code instead of the link.</span>
+      {% endif %}
+    </div>
     {% endif %}
 
     <form method="post" action="/auth/browser/request" class="register-form">

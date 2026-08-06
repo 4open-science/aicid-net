@@ -57,6 +57,43 @@ async def test_browser_verify_link_sets_session_cookie_and_allows_manage(client:
 
 
 @pytest.mark.asyncio
+async def test_browser_verify_link_prefetched_shows_used_at(client: AsyncClient):
+    register_resp = await client.post(
+        "/register",
+        data={
+            "agent_name": "PrefetchBot",
+            "human_operator": "Bob",
+            "operator_email": "bob@example.com",
+        },
+        follow_redirects=False,
+    )
+    assert register_resp.status_code == 303
+
+    request_resp = await client.post(
+        "/auth/browser/request",
+        data={"email": "bob@example.com", "next": "/manage"},
+    )
+    assert request_resp.status_code == 202
+    token = request_resp.text.split("Development code: <code>")[1].split("</code>")[0]
+
+    # Simulate a corporate mail gateway prefetching the link before the user clicks it.
+    prefetch_resp = await client.get(f"/auth/verify?token={token}&next=/manage", follow_redirects=False)
+    assert prefetch_resp.status_code == 303
+
+    # The user then clicks the same link (or pastes the code) and finds it already consumed.
+    second_link_resp = await client.get(f"/auth/verify?token={token}&next=/manage")
+    assert second_link_resp.status_code == 401
+    assert b"already used on" in second_link_resp.content
+
+    code_resp = await client.post(
+        "/auth/browser/verify",
+        data={"token": token, "next": "/manage"},
+    )
+    assert code_resp.status_code == 401
+    assert b"already used on" in code_resp.content
+
+
+@pytest.mark.asyncio
 async def test_browser_manage_updates_public_registered_agent(client: AsyncClient):
     register_resp = await client.post(
         "/register",

@@ -83,6 +83,12 @@ async def _create_auth_challenge(
     return token
 
 
+class AuthChallengeError(HTTPException):
+    def __init__(self, *, used_at: datetime | None = None) -> None:
+        super().__init__(status_code=401, detail="Invalid or expired login challenge")
+        self.used_at = used_at
+
+
 async def _consume_auth_challenge(*, token: str, purpose: str, db: AsyncSession) -> User:
     result = await db.execute(
         select(AuthChallenge).where(
@@ -92,12 +98,10 @@ async def _consume_auth_challenge(*, token: str, purpose: str, db: AsyncSession)
     )
     challenge = result.scalar_one_or_none()
     now = _utcnow()
-    if (
-        challenge is None
-        or challenge.used_at is not None
-        or _as_utc(challenge.expires_at) < now
-    ):
-        raise HTTPException(status_code=401, detail="Invalid or expired login challenge")
+    if challenge is None or _as_utc(challenge.expires_at) < now:
+        raise AuthChallengeError()
+    if challenge.used_at is not None:
+        raise AuthChallengeError(used_at=_as_utc(challenge.used_at))
 
     user = await _get_active_user(challenge.email, db)
     if user is None:
@@ -126,6 +130,7 @@ def _render_login_page(
     error: str | None = None,
     email: str = "",
     challenge_token: str | None = None,
+    used_at: datetime | None = None,
     status_code: int = 200,
 ) -> HTMLResponse:
     return templates.TemplateResponse(
@@ -137,6 +142,7 @@ def _render_login_page(
             "error": error,
             "email": email,
             "challenge_token": challenge_token,
+            "used_at": used_at,
         },
         status_code=status_code,
     )
@@ -264,11 +270,12 @@ async def verify_browser_code(
     next_path = _safe_next_path(next)
     try:
         user = await _consume_auth_challenge(token=token, purpose=AUTH_CHALLENGE_PURPOSE_BROWSER, db=db)
-    except HTTPException:
+    except AuthChallengeError as exc:
         return _render_login_page(
             request,
             next_path=next_path,
             error="That login code is invalid or expired. Request a new one.",
+            used_at=exc.used_at,
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
@@ -293,11 +300,12 @@ async def verify_browser_link(
     next_path = _safe_next_path(next)
     try:
         user = await _consume_auth_challenge(token=token, purpose=AUTH_CHALLENGE_PURPOSE_BROWSER, db=db)
-    except HTTPException:
+    except AuthChallengeError as exc:
         return _render_login_page(
             request,
             next_path=next_path,
             error="That login link is invalid or expired. Request a new one.",
+            used_at=exc.used_at,
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 

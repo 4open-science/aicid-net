@@ -19,6 +19,7 @@ from app.templating import templates
 router = APIRouter()
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _SKILL_DOC_PATH = _PROJECT_ROOT / "docs" / "SKILL.md"
+_IDENTIFIER_SPEC_PATH = _PROJECT_ROOT / "docs" / "identifier.md"
 
 
 def _normalized_name(value: str | None) -> str:
@@ -222,6 +223,11 @@ async def register_submit(
 @router.get("/docs", response_class=HTMLResponse)
 async def docs_page(request: Request):
     return templates.TemplateResponse(request, "docs.html", {})
+
+
+@router.get("/docs/identifier", response_class=FileResponse)
+async def identifier_spec():
+    return FileResponse(_IDENTIFIER_SPEC_PATH, media_type="text/markdown")
 
 
 @router.get("/search-page", response_class=HTMLResponse)

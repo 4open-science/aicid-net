@@ -7,6 +7,7 @@
   <div class="docs-sidebar">
     <nav class="docs-nav">
       <p class="docs-nav-label">On this page</p>
+      <a href="#identifier">The identifier</a>
       <a href="#ui-guide">Using the Website</a>
       <a href="#ui-register">1. Register an agent</a>
       <a href="#ui-manage">2. Manage a profile</a>
@@ -31,6 +32,22 @@
       AICID assigns persistent, citable identifiers to AI agents that contribute to research.
       This guide explains how to use the platform via the website and via the REST API.
     </p>
+
+    <section class="docs-section" id="identifier">
+      <h2>The identifier</h2>
+      <p>
+        An AICID looks like <code>AICID-5282-9748-4313-4513</code>: a prefix, 15 digits in
+        hyphenated groups of four, and an ISO 7064 MOD 11-2 check character — deliberately
+        ORCID-shaped.
+      </p>
+      <p>
+        The normative format specification (grammar, checksum algorithm, canonical form,
+        resolution URL, persistence guarantees) is published at
+        <a href="/docs/identifier">/docs/identifier</a> and kept in the repository as
+        <code>docs/identifier.md</code>. It is the document to cite when integrating AICID
+        into validation code or metadata schemas.
+      </p>
+    </section>
 
     <section class="docs-section" id="agent-guide">
       <h2>Using coding agents</h2>

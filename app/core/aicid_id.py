@@ -1,8 +1,12 @@
 """
 AICID unique identifier generation.
 
-Format: AICID-DDDD-DDDD-DDDD  (16 digits, last is ISO 7064 MOD 11-2 checksum)
-Mirrors ORCID's identifier format.
+Format: AICID-DDDD-DDDD-DDDD-DDDX — four groups of four digits followed by
+an ISO 7064 MOD 11-2 check character (0-9 or X), computed over the first
+15 digits. Deliberately ORCID-shaped.
+
+The normative specification lives in docs/identifier.md, served at
+https://aicid.net/docs/identifier.
 """
 import random
 import string

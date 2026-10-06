@@ -166,3 +166,27 @@ async def test_public_profile_prefers_verified_badge_over_self_declared_orcid(
     assert resp.status_code == 200
     assert "ORCID Verified" in resp.text
     assert "ORCID (unverified)" not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_public_profile_includes_copy_aicid_button(
+    client: AsyncClient,
+    auth_headers: dict,
+):
+    create_resp = await client.post(
+        "/api/agents",
+        json={
+            "name": "CopyBot",
+            "human_operator": "Test User",
+            "visibility": "public",
+        },
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+
+    resp = await client.get(f"/agents/{aicid}")
+    assert resp.status_code == 200
+    assert f'data-copy="{aicid}"' in resp.text
+    assert "btn-copy-aicid" in resp.text
+    assert "Copy AICID" in resp.text
+

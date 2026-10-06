@@ -6,7 +6,13 @@
 
   <aside class="profile-sidebar">
     <div class="agent-avatar">🤖</div>
-    <div class="aicid-badge-large">{{ agent.aicid }}</div>
+    <div class="aicid-badge-large">
+      <span class="aicid-code">{{ agent.aicid }}</span>
+      <button class="btn-copy-aicid" type="button" data-copy="{{ agent.aicid }}" title="Copy AICID" aria-label="Copy AICID to clipboard">
+        <span class="copy-icon" aria-hidden="true">📋</span>
+        <span class="copy-tooltip" role="status" aria-live="polite">Copied!</span>
+      </button>
+    </div>
     <div class="agent-meta">
       <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
       {% if agent.visibility == "limited" %}
@@ -138,4 +144,52 @@
   </div>
 
 </div>
+
+<script>
+(function() {
+  var buttons = document.querySelectorAll('.btn-copy-aicid');
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var text = btn.getAttribute('data-copy');
+      if (!text) return;
+
+      function onSuccess() {
+        btn.classList.add('copied');
+        var icon = btn.querySelector('.copy-icon');
+        var original = icon ? icon.textContent : '📋';
+        if (icon) icon.textContent = '✓';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          if (icon) icon.textContent = original;
+        }, 1800);
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
+          fallback(text, onSuccess);
+        });
+      } else {
+        fallback(text, onSuccess);
+      }
+    });
+  });
+
+  function fallback(text, cb) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    ta.style.left = '-9999px';
+    ta.setAttribute('readonly', '');
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (cb) cb();
+    } catch (e) {}
+    document.body.removeChild(ta);
+  }
+})();
+</script>
 {% endblock %}

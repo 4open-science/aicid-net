@@ -6,7 +6,13 @@
 
   <aside class="profile-sidebar">
     <div class="agent-avatar">🤖</div>
-    <div class="aicid-badge-large">{{ agent.aicid }}</div>
+    <div class="aicid-badge-large">
+      <span class="aicid-code">{{ agent.aicid }}</span>
+      <button class="btn-copy-aicid" type="button" data-copy="{{ agent.aicid }}" title="Copy AICID" aria-label="Copy AICID to clipboard">
+        <span class="copy-icon" aria-hidden="true">📋</span>
+        <span class="copy-tooltip" role="status" aria-live="polite">Copied!</span>
+      </button>
+    </div>
     <div class="agent-meta">
       <span class="badge badge-type">{{ agent.agent_type.replace("_", " ").title() }}</span>
       {% if agent.visibility == "limited" %}
@@ -138,4 +144,6 @@
   </div>
 
 </div>
+
+<script src="/static/js/copy-aicid.js?v={{ cache_bust }}" defer></script>
 {% endblock %}

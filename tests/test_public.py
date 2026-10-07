@@ -189,4 +189,9 @@ async def test_public_profile_includes_copy_aicid_button(
     assert f'data-copy="{aicid}"' in resp.text
     assert "btn-copy-aicid" in resp.text
     assert "Copy AICID" in resp.text
+    # CSP-friendly: script is external, no inline <script> blocks
+    assert "<script>" not in resp.text
+    assert "/static/js/copy-aicid.js" in resp.text
+    js = await client.get("/static/js/copy-aicid.js")
+    assert js.status_code == 200
 

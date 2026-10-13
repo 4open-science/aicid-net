@@ -345,3 +345,16 @@ async def test_search_page_shows_operator_badge(client: AsyncClient, auth_header
     assert 'class="badge badge-operator"' in resp.text
     assert "Martin Monperrus" in resp.text
     assert 'class="badge badge-type"' not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_create_agent_survives_notification_failure(client: AsyncClient, auth_headers: dict):
+    from app.core.email import EmailDeliveryError
+
+    with patch("app.routers.agents.send_email", side_effect=EmailDeliveryError("down")):
+        resp = await client.post(
+            "/api/agents",
+            json={"name": "QuietBot", "human_operator": "Alice"},
+            headers=auth_headers,
+        )
+    assert resp.status_code == 201

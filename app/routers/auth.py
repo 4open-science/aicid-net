@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.config import settings
-from app.core.email import send_email
+from app.core.email import EmailDeliveryError, send_email
 from app.templating import templates
 from app.database import get_db
 from app.models.auth_challenge import AuthChallenge
@@ -39,6 +39,7 @@ router = APIRouter()
 
 AUTH_CHALLENGE_PURPOSE_API = "api_login"
 AUTH_CHALLENGE_PURPOSE_BROWSER = "browser_login"
+EMAIL_DELIVERY_FAILED_DETAIL = "We could not send the login email right now. Please try again later or contact team@aicid.net."
 
 
 def _utcnow() -> datetime:
@@ -192,12 +193,18 @@ async def request_email_login(body: EmailLoginRequest, db: AsyncSession = Depend
         f"Code: {token}\n\n"
         f"This code expires in {settings.AUTH_CHALLENGE_EXPIRE_MINUTES} minutes and can only be used once."
     )
-    await run_in_threadpool(
-        send_email,
-        user.email,
-        "Your AICID API login code",
-        body_text,
-    )
+    try:
+        await run_in_threadpool(
+            send_email,
+            user.email,
+            "Your AICID API login code",
+            body_text,
+        )
+    except EmailDeliveryError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=EMAIL_DELIVERY_FAILED_DETAIL,
+        )
 
     challenge_token = token if settings.ENVIRONMENT != "production" else None
     return EmailLoginRequestResponse(
@@ -241,12 +248,21 @@ async def request_browser_login(
     challenge_token = None
     if user is not None:
         token = await _create_auth_challenge(email=user.email, purpose=AUTH_CHALLENGE_PURPOSE_BROWSER, db=db)
-        await run_in_threadpool(
-            send_email,
-            user.email,
-            "Your AICID browser login link",
-            _build_browser_login_email(token, next_path),
-        )
+        try:
+            await run_in_threadpool(
+                send_email,
+                user.email,
+                "Your AICID browser login link",
+                _build_browser_login_email(token, next_path),
+            )
+        except EmailDeliveryError:
+            return _render_login_page(
+                request,
+                next_path=next_path,
+                error=EMAIL_DELIVERY_FAILED_DETAIL,
+                email=email,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         if settings.ENVIRONMENT != "production":
             challenge_token = token
 

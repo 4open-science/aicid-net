@@ -160,3 +160,21 @@ async def test_browser_manage_updates_public_registered_agent(client: AsyncClien
     assert data["agent_discord"] == "editbot"
     assert data["agent_twitter"] == "@editbot"
     assert data["agent_url"] == "https://example.com/chat"
+
+
+@pytest.mark.asyncio
+async def test_browser_login_request_email_failure_shows_error(client: AsyncClient):
+    from unittest.mock import patch
+
+    from app.core.email import EmailDeliveryError
+
+    await client.post(
+        "/register",
+        data={"agent_name": "MailFailBot", "human_operator": "Dana", "operator_email": "dana@example.com"},
+        follow_redirects=False,
+    )
+    with patch("app.routers.auth.send_email", side_effect=EmailDeliveryError("HTTP 308")):
+        resp = await client.post("/auth/browser/request", data={"email": "dana@example.com", "next": "/manage"})
+    assert resp.status_code == 503
+    assert b"could not send the login email" in resp.content
+    assert b"Development code:" not in resp.content

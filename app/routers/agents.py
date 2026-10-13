@@ -10,7 +10,7 @@ from app.models.user import User
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
 from app.core.deps import get_current_user
 from app.core.aicid_id import generate_aicid
-from app.core.email import send_email
+from app.core.email import EmailDeliveryError, send_email
 
 router = APIRouter()
 
@@ -35,11 +35,14 @@ async def create_agent(
     db.add(agent)
     await db.commit()
     await db.refresh(agent)
-    send_email(
-        "team@aicid.net",
-        f"New agent registered: {agent.name}",
-        f"Agent {agent.name} ({agent.aicid}) registered by {current_user.email}.",
-    )
+    try:
+        send_email(
+            "team@aicid.net",
+            f"New agent registered: {agent.name}",
+            f"Agent {agent.name} ({agent.aicid}) registered by {current_user.email}.",
+        )
+    except EmailDeliveryError:
+        pass  # best-effort team notification; already logged, agent is created
     return agent
 
 

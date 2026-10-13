@@ -167,6 +167,29 @@ async def test_admin_spam_hides_and_unspam_restores(client: AsyncClient, db_sess
     assert (await client.get(f"/agents/{aicid}")).status_code == 200
 
 
+def test_admin_cli_runs_standalone(tmp_path):
+    """Run in a fresh interpreter: the app's other imports must not be needed to configure mappers."""
+    import os
+    import subprocess
+    import sys
+
+    db = tmp_path / "admin.db"
+    env = {**os.environ, "DATABASE_URL": f"sqlite+aiosqlite:///{db}", "ENVIRONMENT": "test"}
+    setup = (
+        "import asyncio, app.admin\n"
+        "from app.database import engine, Base\n"
+        "async def go():\n"
+        "    async with engine.begin() as c: await c.run_sync(Base.metadata.create_all)\n"
+        "asyncio.run(go())\n"
+    )
+    subprocess.run([sys.executable, "-c", setup], env=env, check=True)
+    out = subprocess.run(
+        [sys.executable, "-m", "app.admin", "spam", "AICID-0000-0000-0000-0000"], env=env, capture_output=True, text=True
+    )
+    assert out.returncode == 1, out.stderr
+    assert out.stderr.strip() == "not found: AICID-0000-0000-0000-0000"
+
+
 @pytest.mark.asyncio
 async def test_spam_status_survives_owner_login(client: AsyncClient, db_session: AsyncSession):
     from app.admin import set_moderation

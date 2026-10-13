@@ -6,7 +6,8 @@ answering 308 reached production as a bare 500 on /auth/browser/request.
 
 import json
 import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 from httpx import AsyncClient
@@ -18,6 +19,7 @@ from app.core.email import EmailDeliveryError, send_email
 class FakeRelay:
     def __init__(self) -> None:
         self.status = 200
+        self.delay = 0.0
         self.requests: list[dict] = []
         relay = self
 
@@ -31,6 +33,7 @@ class FakeRelay:
                         "json": json.loads(self.rfile.read(length) or b"{}"),
                     }
                 )
+                time.sleep(relay.delay)
                 if relay.status == 308:
                     self.send_response(308)
                     self.send_header("Location", "https://moved.invalid" + self.path)
@@ -51,7 +54,8 @@ class FakeRelay:
             def log_message(self, format, *args) -> None:
                 pass
 
-        self.server = HTTPServer(("127.0.0.1", 0), Handler)
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server.daemon_threads = True
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}/posthorn"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
@@ -87,6 +91,25 @@ def test_send_email_raises_delivery_error_on_relay_failure(relay: FakeRelay, sta
         send_email("op@example.com", "Subject", "Body")
 
 
+def test_default_timeout_covers_observed_relay_latency():
+    # production relay took up to 21s to answer; the old 10s client default turned delivered mail into errors
+    assert settings.POSTHORN_TIMEOUT_SECONDS >= 30
+
+
+def test_send_email_waits_for_slow_relay(relay: FakeRelay, monkeypatch):
+    monkeypatch.setattr(settings, "POSTHORN_TIMEOUT_SECONDS", 2.0)
+    relay.delay = 0.5
+    send_email("op@example.com", "Subject", "Body")
+    assert len(relay.requests) == 1
+
+
+def test_send_email_times_out_on_stalled_relay(relay: FakeRelay, monkeypatch):
+    monkeypatch.setattr(settings, "POSTHORN_TIMEOUT_SECONDS", 0.2)
+    relay.delay = 1.0
+    with pytest.raises(EmailDeliveryError):
+        send_email("op@example.com", "Subject", "Body")
+
+
 async def _register_operator(client: AsyncClient, email: str) -> None:
     resp = await client.post(
         "/register",
@@ -112,7 +135,7 @@ async def test_browser_login_request_relay_redirect_is_not_a_500(client: AsyncCl
     relay.status = 308
     resp = await client.post("/auth/browser/request", data={"email": "op@example.com", "next": "/manage"})
     assert resp.status_code == 503
-    assert b"could not send the login email" in resp.content
+    assert b"could not confirm that the login email was sent" in resp.content
 
 
 @pytest.mark.asyncio

@@ -20,6 +20,7 @@ def send_email(to_email: str, subject: str, body: str) -> None:
         settings.POSTHORN_BASE_URL,
         settings.POSTHORN_API_KEY,
         default_path=settings.POSTHORN_PATH,
+        timeout=settings.POSTHORN_TIMEOUT_SECONDS,
     )
     try:
         client.send_to_override(

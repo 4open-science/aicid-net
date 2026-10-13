@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     POSTHORN_BASE_URL: str | None = None
     POSTHORN_API_KEY: str | None = None
     POSTHORN_PATH: str = "/api/send"
+    # the relay answers only after its SMTP hand-off, observed at 6-21s
+    POSTHORN_TIMEOUT_SECONDS: float = 45.0
     SESSION_COOKIE_NAME: str = "aicid_session"
 
     ORCID_CLIENT_ID: str | None = None

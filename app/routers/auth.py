@@ -39,7 +39,10 @@ router = APIRouter()
 
 AUTH_CHALLENGE_PURPOSE_API = "api_login"
 AUTH_CHALLENGE_PURPOSE_BROWSER = "browser_login"
-EMAIL_DELIVERY_FAILED_DETAIL = "We could not send the login email right now. Please try again later or contact team@aicid.net."
+EMAIL_DELIVERY_FAILED_DETAIL = (
+    "We could not confirm that the login email was sent. If it does not arrive within a few minutes, "
+    "please try again or contact team@aicid.net."
+)
 
 
 def _utcnow() -> datetime:

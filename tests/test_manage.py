@@ -176,5 +176,5 @@ async def test_browser_login_request_email_failure_shows_error(client: AsyncClie
     with patch("app.routers.auth.send_email", side_effect=EmailDeliveryError("HTTP 308")):
         resp = await client.post("/auth/browser/request", data={"email": "dana@example.com", "next": "/manage"})
     assert resp.status_code == 503
-    assert b"could not send the login email" in resp.content
+    assert b"could not confirm that the login email was sent" in resp.content
     assert b"Development code:" not in resp.content

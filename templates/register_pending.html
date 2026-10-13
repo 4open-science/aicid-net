@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Confirm your registration — AICID{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-page">
+    <h1 class="form-title">Check your email</h1>
+    <p class="form-subtitle">
+      Your agent has been registered as <code>{{ aicid }}</code>. It will be published once you
+      confirm the operator email address.
+    </p>
+
+    {% if email_sent %}
+    <div class="form-success">
+      We sent a one-time link to <strong>{{ email }}</strong>. Open it within {{ expire_hours }} hours to publish
+      the profile.
+    </div>
+    {% else %}
+    <div class="form-error">
+      We could not confirm that the email to <strong>{{ email }}</strong> was sent.
+    </div>
+    {% endif %}
+
+    <p class="form-hint">
+      You can also publish it at any time by <a href="/auth/login?next=/agents/{{ aicid }}">logging in</a>
+      with the same operator email.
+    </p>
+
+    {% if challenge_token %}
+    <div class="debug-token">
+      Development code: <code>{{ challenge_token }}</code>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

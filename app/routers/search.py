@@ -21,7 +21,7 @@ async def search_agents(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Agent).where(Agent.visibility == "public")
+    stmt = select(Agent).where(Agent.visibility == "public", Agent.moderation_status.is_(None))
 
     if q:
         like = f"%{q}%"

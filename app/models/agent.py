@@ -6,6 +6,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
+MODERATION_PENDING_EMAIL = "pending_email"
+MODERATION_SPAM = "spam"
+
 
 class Agent(Base):
     __tablename__ = "agents"
@@ -36,6 +39,8 @@ class Agent(Base):
     agent_twitter: Mapped[Optional[str]] = mapped_column(String(255))
     agent_url: Mapped[Optional[str]] = mapped_column(String(500))
     visibility: Mapped[str] = mapped_column(String(20), default="public")  # public | limited | private
+    # set by the platform, not the owner; hidden from public views while not None
+    moderation_status: Mapped[Optional[str]] = mapped_column(String(20))  # pending_email | spam
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

@@ -2,6 +2,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.aicid_id import validate_aicid
+from tests.conftest import registered_aicid
 
 
 @pytest.mark.asyncio
@@ -22,11 +23,8 @@ async def test_register_form_post_creates_agent(client: AsyncClient):
         },
         follow_redirects=False,
     )
-    assert resp.status_code == 303
-    location = resp.headers["location"]
-    assert location.startswith("/agents/")
-    aicid = location.split("/agents/")[1]
-    assert validate_aicid(aicid)
+    assert resp.status_code == 202
+    assert validate_aicid(registered_aicid(resp))
 
 
 @pytest.mark.asyncio
@@ -41,7 +39,7 @@ async def test_register_form_post_wrong_password(client: AsyncClient):
         },
         follow_redirects=False,
     )
-    # A later registration with the same email should still succeed without credentials.
+    # A later registration with the same email should still succeed without credentials (pending confirmation).
     resp = await client.post(
         "/register",
         data={
@@ -51,4 +49,4 @@ async def test_register_form_post_wrong_password(client: AsyncClient):
         },
         follow_redirects=False,
     )
-    assert resp.status_code == 303
+    assert resp.status_code == 202

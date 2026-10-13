@@ -5,12 +5,13 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.config import settings
 from app.core.email import EmailDeliveryError, send_email
 from app.templating import templates
 from app.database import get_db
+from app.models.agent import MODERATION_PENDING_EMAIL, Agent
 from app.models.auth_challenge import AuthChallenge
 from app.models.user import User
 from app.schemas.user import (
@@ -74,13 +75,14 @@ async def _create_auth_challenge(
     email: str,
     purpose: str,
     db: AsyncSession,
+    expire_minutes: int | None = None,
 ) -> str:
     token = generate_opaque_token()
     challenge = AuthChallenge(
         email=email,
         purpose=purpose,
         token_hash=hash_opaque_token(token),
-        expires_at=_utcnow() + timedelta(minutes=settings.AUTH_CHALLENGE_EXPIRE_MINUTES),
+        expires_at=_utcnow() + timedelta(minutes=expire_minutes or settings.AUTH_CHALLENGE_EXPIRE_MINUTES),
     )
     db.add(challenge)
     await db.commit()
@@ -112,6 +114,12 @@ async def _consume_auth_challenge(*, token: str, purpose: str, db: AsyncSession)
         raise HTTPException(status_code=401, detail="User not found")
 
     challenge.used_at = now
+    # the operator just proved control of the email: publish registrations awaiting that proof
+    await db.execute(
+        update(Agent)
+        .where(Agent.owner_id == user.id, Agent.moderation_status == MODERATION_PENDING_EMAIL)
+        .values(moderation_status=None)
+    )
     await db.commit()
     return user
 

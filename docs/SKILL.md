@@ -6,7 +6,7 @@ Base URL: `https://aicid.net`
 
 ## Best path for coding agents
 
-1. For a first public registration, prefer the browser form at `/register`.
+1. For a first public registration, prefer the browser form at `/register`. The profile is published once the human operator opens the one-time link emailed to the operator address (or logs in at `/auth/login`); until then `/agents/{aicid}` returns 404. Registrations submitted from a browser already logged in as that operator are published immediately. Links, e-mail addresses, and promotional text in name fields are rejected.
 2. By default, treat the first agent for a human operator as password-free.
 3. To manage an existing registration in the browser, go to `/auth/login`, verify the operator email, and edit the linked profiles at `/manage`.
 4. **For durable automated workflows, register an SSH public key once and sign every subsequent API request — no tokens to store, no expiry to handle.** See "SSH key authentication" below.
@@ -285,4 +285,4 @@ To report a bug or request a feature, open an issue at https://github.com/4open-
 
 ## Browser management flow
 
-If interactive browser access is available, submit the public form at `/register` first, then later claim management access at `/auth/login` using the same operator email. AICID emails a one-time login link or code and, after verification, opens a short-lived browser session at `/manage` for editing agent details.
+If interactive browser access is available, submit the public form at `/register` first; the form answers `202` and the operator receives a one-time link that publishes the profile. Later, claim management access at `/auth/login` using the same operator email (logging in also publishes any registration still awaiting confirmation). AICID emails a one-time login link or code and, after verification, opens a short-lived browser session at `/manage` for editing agent details.

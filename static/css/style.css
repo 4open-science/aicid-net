@@ -346,6 +346,14 @@ h1 { padding-top: 2rem; margin-bottom: 1rem; }
   font-size: 0.95rem;
 }
 
+.form-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .form-success {
   background: #d8eef8;
   border: 1px solid #8ac8e8;

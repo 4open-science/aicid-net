@@ -75,6 +75,22 @@ async def issued_challenge(client: AsyncClient, db_session: AsyncSession):
     )
     response = await client.post("/auth/email/request", json={"email": "challenge@example.com"})
     token = response.json()["challenge_token"]
-    result = await db_session.execute(select(AuthChallenge).where(AuthChallenge.email == "challenge@example.com"))
+    result = await db_session.execute(
+        select(AuthChallenge).where(
+            AuthChallenge.email == "challenge@example.com", AuthChallenge.purpose == "api_login"
+        )
+    )
     challenge = result.scalar_one()
     return token, challenge.id
+
+
+def registered_aicid(resp) -> str:
+    """AICID from a /register response: redirect when published, confirmation page when pending."""
+    import re
+
+    if resp.status_code == 303:
+        return resp.headers["location"].split("/agents/")[1]
+    assert resp.status_code == 202, resp.status_code
+    match = re.search(r"AICID-\d{4}-\d{4}-\d{4}-\d{3}[\dX]", resp.text)
+    assert match, "no AICID on the registration page"
+    return match.group(0)

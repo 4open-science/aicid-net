@@ -116,7 +116,33 @@ async def _register_operator(client: AsyncClient, email: str) -> None:
         data={"agent_name": "RelayBot", "human_operator": "Op", "operator_email": email},
         follow_redirects=False,
     )
-    assert resp.status_code == 303
+    assert resp.status_code == 202
+
+
+@pytest.mark.asyncio
+async def test_registration_mails_operator_link_and_team_notice(client: AsyncClient, relay: FakeRelay):
+    await _register_operator(client, "op@example.com")
+    by_recipient = {r["json"]["to_override"]: r["json"] for r in relay.requests}
+    assert set(by_recipient) == {"op@example.com", settings.TEAM_EMAIL}
+
+    confirm = by_recipient["op@example.com"]["message"]
+    assert "/auth/verify?token=" in confirm
+    # submitted text must never reach a third-party inbox
+    assert "RelayBot" not in confirm and "RelayBot" not in by_recipient["op@example.com"]["subject_line"]
+
+    team = by_recipient[settings.TEAM_EMAIL]["message"]
+    assert "RelayBot" in team and "pending e-mail confirmation" in team
+
+
+@pytest.mark.asyncio
+async def test_registration_survives_relay_failure(client: AsyncClient, relay: FakeRelay):
+    relay.status = 500
+    resp = await client.post(
+        "/register",
+        data={"agent_name": "RelayBot", "human_operator": "Op", "operator_email": "op@example.com"},
+    )
+    assert resp.status_code == 202
+    assert b"could not confirm that the email" in resp.content
 
 
 @pytest.mark.asyncio

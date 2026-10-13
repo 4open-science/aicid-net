@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     POSTHORN_PATH: str = "/api/send"
     # the relay answers only after its SMTP hand-off, observed at 6-21s
     POSTHORN_TIMEOUT_SECONDS: float = 45.0
+
+    # anti-spam for the anonymous /register form
+    SPAM_BLOCKED_EMAIL_DOMAINS: str = ""  # comma-separated, added to the built-in list
+    REGISTRATION_LIMIT_PER_HOUR: int = 50
+    REGISTRATION_LIMIT_PER_EMAIL_PER_HOUR: int = 10
+    REGISTRATION_CONFIRM_EXPIRE_MINUTES: int = 24 * 60
+    TEAM_EMAIL: str = "team@aicid.net"
     SESSION_COOKIE_NAME: str = "aicid_session"
 
     ORCID_CLIENT_ID: str | None = None

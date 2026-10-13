@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import registered_aicid
+
 
 @pytest.mark.asyncio
 async def test_manage_requires_browser_session(client: AsyncClient):
@@ -27,7 +29,7 @@ async def test_browser_verify_link_sets_session_cookie_and_allows_manage(client:
         },
         follow_redirects=False,
     )
-    aicid = register_resp.headers["location"].split("/agents/")[1]
+    aicid = registered_aicid(register_resp)
 
     request_resp = await client.post(
         "/auth/browser/request",
@@ -67,7 +69,7 @@ async def test_browser_verify_link_prefetched_shows_used_at(client: AsyncClient)
         },
         follow_redirects=False,
     )
-    assert register_resp.status_code == 303
+    assert register_resp.status_code == 202
 
     request_resp = await client.post(
         "/auth/browser/request",
@@ -104,7 +106,7 @@ async def test_browser_manage_updates_public_registered_agent(client: AsyncClien
         },
         follow_redirects=False,
     )
-    aicid = register_resp.headers["location"].split("/agents/")[1]
+    aicid = registered_aicid(register_resp)
 
     request_resp = await client.post(
         "/auth/browser/request",

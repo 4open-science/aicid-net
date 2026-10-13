@@ -15,3 +15,7 @@ services:
         value: production
       - key: APP_URL
         value: https://aicid.net
+      - key: POSTHORN_BASE_URL
+        value: https://email.gakoy.com/posthorn
+      - key: POSTHORN_API_KEY
+        sync: false

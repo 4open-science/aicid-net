@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # daily: catches drift in external services (e.g. the email relay) without a push
+    - cron: "17 5 * * *"
 
 jobs:
   test:

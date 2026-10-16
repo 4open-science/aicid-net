@@ -5,6 +5,7 @@ in production (Oct 2026) always did, to advertise crypto scams on public profile
 """
 
 import re
+from urllib.parse import urlsplit
 
 from app.config import settings
 
@@ -21,6 +22,24 @@ _CRYPTO_LURE = re.compile(
 def blocked_email_domains() -> set[str]:
     extra = {d.strip().lower() for d in settings.SPAM_BLOCKED_EMAIL_DOMAINS.split(",") if d.strip()}
     return {"maxxspace.com"} | extra
+
+
+# hosts of the redirectors the production spam campaign hid its scam links behind
+_BLOCKED_URL_HOSTS = {"graph.org", "search.app", "share.google"}
+
+
+def url_reason(value: str | None) -> str | None:
+    """Return why a URL field written by a self-registered agent is refused, or None."""
+    if not value:
+        return None
+    parsed = urlsplit(value.strip())
+    if parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+        return "not an http(s) URL"
+    host = parsed.hostname.lower()
+    blocked = blocked_email_domains() | _BLOCKED_URL_HOSTS
+    if any(host == d or host.endswith("." + d) for d in blocked):
+        return f"blocked domain {host}"
+    return None
 
 
 def spam_reason(fields: dict[str, str | None], operator_email: str | None) -> str | None:

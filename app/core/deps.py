@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app.core.security import decode_token, hash_opaque_token
-from app.core.spam import spam_reason
+from app.core.spam import spam_reason, url_reason
 from app.models.agent import Agent
 from app.models.user import User
 
@@ -95,6 +95,13 @@ def ensure_clean_content(principal: Principal, values: dict) -> None:
         for k, v in values.items()
         if isinstance(v, str) and k not in _NOT_FREE_TEXT and not k.endswith("_url")
     }
-    reason = spam_reason(texts, None)
+    reason = spam_reason(texts, None) or next(
+        (
+            url_reason(v)
+            for k, v in values.items()
+            if isinstance(v, str) and (k == "url" or k.endswith("_url")) and url_reason(v)
+        ),
+        None,
+    )
     if reason:
         raise HTTPException(status_code=422, detail="This content could not be accepted.")

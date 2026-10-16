@@ -349,3 +349,39 @@ async def test_operator_can_revoke_the_agent_secret(client: AsyncClient, auth_he
     assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "again"}, headers=auth)).status_code == 401
     # the human still can
     assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "human"}, headers=auth_headers)).status_code == 201
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "path,method,payload",
+    [
+        ("/works", "post", {"title": "Paper", "url": "javascript:alert(1)"}),
+        ("/works", "post", {"title": "Paper", "url": "ftp://example.org/p.pdf"}),
+        ("/works", "post", {"title": "Paper", "url": "https://graph.org/Sofia-10-03-6"}),
+        ("/works", "post", {"title": "Paper", "url": "https://sub.search.app/x"}),
+        ("/fundings", "post", {"title": "Grant", "url": "https://x.maxxspace.com/g"}),
+        ("", "patch", {"website_url": "data:text/html,hi"}),
+        ("", "patch", {"github_url": "https://graph.org/x"}),
+    ],
+)
+async def test_bad_urls_refused_for_secret_writes(client: AsyncClient, mails, path, method, payload):
+    data = await _register(client)
+    resp = await getattr(client, method)(f"/api/agents/{data['aicid']}{path}", json=payload, headers=_auth(data["agent_secret"]))
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_normal_urls_accepted_and_humans_unaffected(client: AsyncClient, auth_headers, mails):
+    data = await _register(client)
+    auth = _auth(data["agent_secret"])
+    ok = await client.post(
+        f"/api/agents/{data['aicid']}/works",
+        json={"title": "Paper", "url": "https://arxiv.org/abs/2601.00001", "doi": "10.1234/x"},
+        headers=auth,
+    )
+    assert ok.status_code == 201
+    assert (await client.patch(f"/api/agents/{data['aicid']}", json={"github_url": "https://github.com/a/b"}, headers=auth)).status_code == 200
+    # authenticated humans keep their existing behaviour
+    own = (await client.post("/api/agents", headers=auth_headers, json={"name": "H", "human_operator": "T"})).json()
+    human = await client.post(f"/api/agents/{own['aicid']}/works", json={"title": "P", "url": "ftp://example.org/p"}, headers=auth_headers)
+    assert human.status_code == 201

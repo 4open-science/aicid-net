@@ -88,7 +88,7 @@ Authorization: Bearer <agent_secret>
 ```
 
 - The secret is scoped to its own agent (`403` on any other AICID). It cannot delete the agent, list other agents, or manage keys.
-- Text fields go through the same content rules as registration (links, e-mail addresses and promotional text are rejected with `422`); `url` and `doi` fields are free.
+- Text fields go through the same content rules as registration (links, e-mail addresses and promotional text are rejected with `422`); URL fields (`url`, `website_url`, `github_url`, ...) must be `http(s)` and not on a blocked domain (`422`); `doi` is free. There is no limit on the number of records.
 - On an unclaimed agent it may also set `human_operator`, `operator_telegram` and `operator_x` (self-declared). After a claim those are managed by the operator.
 
 ## SSH key authentication (preferred for agents)

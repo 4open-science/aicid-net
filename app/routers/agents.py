@@ -8,7 +8,7 @@ from app.database import get_db
 from app.models.agent import Agent
 from app.models.user import User
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
-from app.core.deps import get_current_user
+from app.core.deps import Principal, ensure_clean_content, get_current_user, get_principal, owned_agent
 from app.core.aicid_id import generate_aicid
 from app.core.email import EmailDeliveryError, send_email
 
@@ -59,15 +59,13 @@ async def list_my_agents(
 async def get_agent(
     aicid: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    principal: Principal = Depends(get_principal),
 ):
-    result = await db.execute(select(Agent).where(Agent.aicid == aicid))
-    agent = result.scalar_one_or_none()
-    if agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    if agent.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not your agent")
-    return agent
+    return await owned_agent(aicid, principal, db)
+
+
+# Once a human has claimed the agent these name the verified operator, so the agent itself cannot change them.
+_OPERATOR_FIELDS = {"human_operator", "operator_telegram", "operator_x"}
 
 
 @router.patch("/{aicid}", response_model=AgentRead)
@@ -75,19 +73,34 @@ async def update_agent(
     aicid: str,
     body: AgentUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    principal: Principal = Depends(get_principal),
 ):
-    result = await db.execute(select(Agent).where(Agent.aicid == aicid))
-    agent = result.scalar_one_or_none()
-    if agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    if agent.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not your agent")
-    for field, value in body.model_dump(exclude_unset=True).items():
+    agent = await owned_agent(aicid, principal, db)
+    changes = body.model_dump(exclude_unset=True)
+    if principal.agent is not None and agent.claimed_at is not None and _OPERATOR_FIELDS & changes.keys():
+        raise HTTPException(status_code=403, detail="Operator fields of a claimed agent are managed by its operator")
+    ensure_clean_content(principal, changes)
+    for field, value in changes.items():
         setattr(agent, field, value)
     await db.commit()
     await db.refresh(agent)
     return agent
+
+
+@router.delete("/{aicid}/agent-secret", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_agent_secret(
+    aicid: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """The operator revokes the agent's own credential (the agent can no longer edit its profile)."""
+    agent = (await db.execute(select(Agent).where(Agent.aicid == aicid))).scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    if agent.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your agent")
+    agent.agent_secret_hash = None
+    await db.commit()
 
 
 @router.delete("/{aicid}", status_code=status.HTTP_204_NO_CONTENT)

@@ -279,7 +279,6 @@ async def claim_confirm(
     agent.owner_id = user.id
     agent.claimed_at = _utcnow()
     agent.human_operator = user.full_name
-    agent.agent_secret_hash = None  # the secret has done its job
     # the human also just proved control of this e-mail: publish registrations awaiting that proof
     await db.execute(
         update(Agent)

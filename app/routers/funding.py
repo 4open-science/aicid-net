@@ -5,23 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models.agent import Agent
 from app.models.funding import Funding
-from app.models.user import User
 from app.schemas.funding import FundingCreate, FundingRead, FundingUpdate
-from app.core.deps import get_current_user
+from app.core.deps import Principal, ensure_clean_content, get_principal, owned_agent as _get_owned_agent
 
 router = APIRouter()
-
-
-async def _get_owned_agent(aicid: str, user: User, db: AsyncSession) -> Agent:
-    result = await db.execute(select(Agent).where(Agent.aicid == aicid))
-    agent = result.scalar_one_or_none()
-    if agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    if agent.owner_id != user.id:
-        raise HTTPException(status_code=403, detail="Not your agent")
-    return agent
 
 
 @router.post("/{aicid}/fundings", response_model=FundingRead, status_code=status.HTTP_201_CREATED)
@@ -29,9 +17,10 @@ async def add_funding(
     aicid: str,
     body: FundingCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Principal = Depends(get_principal),
 ):
     agent = await _get_owned_agent(aicid, current_user, db)
+    ensure_clean_content(current_user, body.model_dump())
     fund = Funding(agent_id=agent.id, **body.model_dump())
     db.add(fund)
     await db.commit()
@@ -43,7 +32,7 @@ async def add_funding(
 async def list_fundings(
     aicid: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Principal = Depends(get_principal),
 ):
     agent = await _get_owned_agent(aicid, current_user, db)
     result = await db.execute(select(Funding).where(Funding.agent_id == agent.id))
@@ -56,7 +45,7 @@ async def update_funding(
     fund_id: int,
     body: FundingUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Principal = Depends(get_principal),
 ):
     agent = await _get_owned_agent(aicid, current_user, db)
     result = await db.execute(
@@ -65,6 +54,7 @@ async def update_funding(
     fund = result.scalar_one_or_none()
     if fund is None:
         raise HTTPException(status_code=404, detail="Funding not found")
+    ensure_clean_content(current_user, body.model_dump(exclude_unset=True))
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(fund, field, value)
     await db.commit()
@@ -77,7 +67,7 @@ async def delete_funding(
     aicid: str,
     fund_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Principal = Depends(get_principal),
 ):
     agent = await _get_owned_agent(aicid, current_user, db)
     result = await db.execute(

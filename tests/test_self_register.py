@@ -155,13 +155,13 @@ async def test_full_claim_flow_new_operator(client: AsyncClient, db_session: Asy
 
     agent = (await db_session.execute(select(Agent).where(Agent.aicid == aicid))).scalar_one()
     owner = (await db_session.execute(select(User).where(User.id == agent.owner_id))).scalar_one()
-    assert owner.email == "jane@example.org" and agent.agent_secret_hash is None
+    assert owner.email == "jane@example.org" and agent.agent_secret_hash is not None
 
-    # the link and the secret are dead afterwards
+    # the link is dead afterwards, and an agent cannot start a second claim
     again = await client.post(f"/claim/{aicid}", data={"token": link.group(2), "full_name": "Eve"})
     assert again.status_code == 401
     after = await client.post(f"/api/agents/{aicid}/claim", json={}, headers=_auth(data["agent_secret"]))
-    assert after.status_code == 403
+    assert after.status_code == 409
 
 
 @pytest.mark.asyncio
@@ -229,3 +229,123 @@ async def test_docs_page_renders_skill_md(client: AsyncClient):
     assert "```" not in page.text
     assert 'href="#self-registration-fully-autonomous"' in page.text  # nav entry built from its headings
     assert 'id="self-registration-fully-autonomous"' in page.text
+
+
+# --- the agent edits its own profile with agent_secret ---------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_agent_edits_profile_and_adds_works_with_its_secret(client: AsyncClient, mails):
+    data = await _register(client)
+    aicid, auth = data["aicid"], _auth(data["agent_secret"])
+
+    patched = await client.patch(
+        f"/api/agents/{aicid}", json={"description": "Reads papers.", "organization": "Example Lab"}, headers=auth
+    )
+    assert patched.status_code == 200 and patched.json()["description"] == "Reads papers."
+
+    work = await client.post(
+        f"/api/agents/{aicid}/works",
+        json={"title": "Automated Review", "doi": "10.1234/example.2026", "url": "https://doi.org/10.1234/example.2026"},
+        headers=auth,
+    )
+    assert work.status_code == 201
+    work_id = work.json()["id"]
+    assert (await client.patch(f"/api/agents/{aicid}/works/{work_id}", json={"journal": "Nature AI"}, headers=auth)).status_code == 200
+    emp = await client.post(f"/api/agents/{aicid}/employments", json={"organization": "Example Lab"}, headers=auth)
+    fund = await client.post(f"/api/agents/{aicid}/fundings", json={"title": "AI for Science", "funder": "NSF"}, headers=auth)
+    assert emp.status_code == 201 and fund.status_code == 201
+    assert len((await client.get(f"/api/agents/{aicid}/works", headers=auth)).json()) == 1
+    assert (await client.get(f"/api/agents/{aicid}", headers=auth)).status_code == 200
+
+    public = (await client.get(f"/agents/{aicid}/json")).json()
+    assert public["description"] == "Reads papers."
+    assert public["works"][0]["journal"] == "Nature AI"
+    assert (await client.delete(f"/api/agents/{aicid}/works/{work_id}", headers=auth)).status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_agent_secret_is_scoped_to_its_own_agent(client: AsyncClient, mails):
+    a = await _register(client)
+    b = await _register(client, name="Other")
+    resp = await client.post(
+        f"/api/agents/{b['aicid']}/works", json={"title": "Not mine"}, headers=_auth(a["agent_secret"])
+    )
+    assert resp.status_code == 403
+    assert (await client.patch(f"/api/agents/{b['aicid']}", json={"name": "Hijacked"}, headers=_auth(a["agent_secret"]))).status_code == 403
+    assert (await client.get(f"/api/agents/{b['aicid']}", headers=_auth(a["agent_secret"]))).status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_wrong_secret_cannot_write(client: AsyncClient, mails):
+    data = await _register(client)
+    resp = await client.post(f"/api/agents/{data['aicid']}/works", json={"title": "x"}, headers=_auth("nope"))
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_secret_cannot_delete_agent_or_list_all_agents(client: AsyncClient, mails):
+    data = await _register(client)
+    auth = _auth(data["agent_secret"])
+    assert (await client.delete(f"/api/agents/{data['aicid']}", headers=auth)).status_code == 401
+    assert (await client.get("/api/agents", headers=auth)).status_code == 401
+    assert (await client.get(f"/agents/{data['aicid']}")).status_code == 200
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "path,method,payload",
+    [
+        ("", "patch", {"description": "Win 2 BTC at graph.org/x now"}),
+        ("", "patch", {"name": "see https://evil.example"}),
+        ("/works", "post", {"title": "Free USDC withdraw bonus"}),
+        ("/employments", "post", {"organization": "visit www.evil.example"}),
+        ("/fundings", "post", {"title": "Grant", "funder": "http://evil.example"}),
+    ],
+)
+async def test_spam_rules_apply_to_secret_writes(client: AsyncClient, mails, path, method, payload):
+    data = await _register(client)
+    resp = await getattr(client, method)(f"/api/agents/{data['aicid']}{path}", json=payload, headers=_auth(data["agent_secret"]))
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_claimed_agent_keeps_editing_but_not_operator_fields(client: AsyncClient, mails):
+    data = await _register(client, operator_email="jane@example.org")
+    aicid, auth = data["aicid"], _auth(data["agent_secret"])
+    await client.post(f"/api/agents/{aicid}/claim", json={}, headers=auth)
+    token = re.search(r"token=([\w-]+)", next(m[2] for m in mails if m[1].startswith("Claim"))).group(1)
+    await client.post(f"/claim/{aicid}", data={"token": token, "full_name": "Jane Roe"})
+
+    assert (await client.patch(f"/api/agents/{aicid}", json={"description": "Still mine"}, headers=auth)).status_code == 200
+    assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "New paper"}, headers=auth)).status_code == 201
+    for field in ("human_operator", "operator_telegram", "operator_x"):
+        resp = await client.patch(f"/api/agents/{aicid}", json={field: "Eve"}, headers=auth)
+        assert resp.status_code == 403, field
+    assert (await client.get(f"/agents/{aicid}/json")).json()["human_operator"] == "Jane Roe"
+
+
+@pytest.mark.asyncio
+async def test_unclaimed_agent_may_set_operator_fields(client: AsyncClient, mails):
+    data = await _register(client)
+    resp = await client.patch(
+        f"/api/agents/{data['aicid']}", json={"operator_x": "@jane_x", "human_operator": "Jane"}, headers=_auth(data["agent_secret"])
+    )
+    assert resp.status_code == 200 and resp.json()["operator_x"] == "@jane_x"
+
+
+@pytest.mark.asyncio
+async def test_operator_can_revoke_the_agent_secret(client: AsyncClient, auth_headers, db_session: AsyncSession, mails):
+    # a human-owned agent that also has a secret (claimed agents keep theirs)
+    data = await _register(client, operator_email="test@example.com")
+    aicid, auth = data["aicid"], _auth(data["agent_secret"])
+    await client.post(f"/api/agents/{aicid}/claim", json={}, headers=auth)
+    token = re.search(r"token=([\w-]+)", next(m[2] for m in mails if m[1].startswith("Claim"))).group(1)
+    await client.post(f"/claim/{aicid}", data={"token": token})
+
+    assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "ok"}, headers=auth)).status_code == 201
+    assert (await client.delete(f"/api/agents/{aicid}/agent-secret", headers=auth)).status_code == 401  # agent cannot revoke itself
+    assert (await client.delete(f"/api/agents/{aicid}/agent-secret", headers=auth_headers)).status_code == 204
+    assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "again"}, headers=auth)).status_code == 401
+    # the human still can
+    assert (await client.post(f"/api/agents/{aicid}/works", json={"title": "human"}, headers=auth_headers)).status_code == 201

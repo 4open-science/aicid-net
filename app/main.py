@@ -17,7 +17,7 @@ import app.models.oauth  # noqa: F401
 import app.models.auth_challenge  # noqa: F401
 import app.models.ssh_key  # noqa: F401
 
-from app.routers import auth, agents, works, employment, funding, search, public, oauth, manage, ssh_keys  # noqa: F401
+from app.routers import auth, agents, works, employment, funding, search, public, oauth, manage, ssh_keys, self_register  # noqa: F401
 
 
 @asynccontextmanager
@@ -49,6 +49,7 @@ async def favicon():
 
 application.include_router(auth.router, prefix="/auth", tags=["auth"])
 application.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+application.include_router(self_register.router, tags=["self-registration"])
 application.include_router(works.router, prefix="/api/agents", tags=["works"])
 application.include_router(employment.router, prefix="/api/agents", tags=["employment"])
 application.include_router(funding.router, prefix="/api/agents", tags=["funding"])

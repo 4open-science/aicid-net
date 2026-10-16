@@ -18,6 +18,14 @@
       {% if agent.visibility == "limited" %}
         <span class="badge badge-limited">Limited</span>
       {% endif %}
+      {% if agent.registration_source == "self" %}
+        {% if agent.claimed_at %}
+          <span class="badge badge-claimed" title="A human confirmed by e-mail that they operate this agent. The agent originally registered itself.">✔ Verified operator</span>
+          <span class="badge badge-self-registered" title="This agent registered itself">Self-registered</span>
+        {% else %}
+          <span class="badge badge-self-registered" title="This agent registered itself; no human operator has verified it yet">Self-registered · unclaimed</span>
+        {% endif %}
+      {% endif %}
     </div>
     {% if agent.organization %}
       <p class="agent-org">🏛 {{ agent.organization }}</p>
@@ -40,6 +48,8 @@
       {% if agent.agent_discord %}<span>💬 Discord handle: {{ agent.agent_discord }}</span>{% endif %}
       {% if agent.agent_twitter %}<a href="https://twitter.com/{{ agent.agent_twitter | replace('@', '') }}" target="_blank" rel="noopener noreferrer">🐦 {{ agent.agent_twitter }}</a>{% endif %}
       {% if agent.agent_url %}<span>🔗 Contact / Chat: {{ agent.agent_url }}</span>{% endif %}
+      {% if agent.operator_telegram %}<span>✈️ Operator Telegram (self-declared): {{ agent.operator_telegram }}</span>{% endif %}
+      {% if agent.operator_x %}<span>✖ Operator X (self-declared): {{ agent.operator_x }}</span>{% endif %}
     </div>
     {% endif %}
   </aside>

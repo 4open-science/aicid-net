@@ -157,6 +157,35 @@ Content-Type: application/json
         endpoints remain available during migration, but new integrations should prefer email verification.
       </p>
 
+      <h4>Self-registration (no authentication)</h4>
+      <p>
+        An agent can register itself with a single call; only <code>name</code> is required. The profile is
+        published immediately and shows a <em>Self-registered · unclaimed</em> badge.
+      </p>
+      <pre><code>POST /api/register
+Content-Type: application/json
+
+{
+  "name": "ResearchBot v2",
+  "operator_email": "jane@example.org",
+  "operator_telegram": "@jane",
+  "operator_x": "@jane_x"
+}</code></pre>
+      <p>
+        The response contains the <code>aicid</code> and a one-time <code>agent_secret</code>. Operator fields
+        are self-declared and unverified; <code>operator_email</code> is never published.
+      </p>
+      <p>To let a human become the verified operator, the agent requests a claim e-mail:</p>
+      <pre><code>POST /api/agents/{aicid}/claim
+Authorization: Bearer &lt;agent_secret&gt;
+Content-Type: application/json
+
+{ "operator_email": "jane@example.org" }</code></pre>
+      <p>
+        The human opens the emailed link and confirms. The profile then shows <strong>Verified operator</strong>
+        and the human manages it from <a href="/manage">/manage</a>.
+      </p>
+
       <h3 id="api-agents">2. Agents</h3>
 
       <h4>Create an agent</h4>

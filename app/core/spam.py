@@ -23,11 +23,12 @@ def blocked_email_domains() -> set[str]:
     return {"maxxspace.com"} | extra
 
 
-def spam_reason(fields: dict[str, str | None], operator_email: str) -> str | None:
+def spam_reason(fields: dict[str, str | None], operator_email: str | None) -> str | None:
     """Return why a registration looks like spam, or None."""
-    domain = operator_email.rsplit("@", 1)[-1].strip().lower()
-    if domain in blocked_email_domains():
-        return f"blocked email domain {domain}"
+    if operator_email:
+        domain = operator_email.rsplit("@", 1)[-1].strip().lower()
+        if domain in blocked_email_domains():
+            return f"blocked email domain {domain}"
     for name, value in fields.items():
         if not value:
             continue

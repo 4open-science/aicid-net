@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     REGISTRATION_LIMIT_PER_HOUR: int = 50
     REGISTRATION_LIMIT_PER_EMAIL_PER_HOUR: int = 10
     REGISTRATION_CONFIRM_EXPIRE_MINUTES: int = 24 * 60
+    # agents registering themselves through POST /api/register (published at once)
+    SELF_REGISTRATION_LIMIT_PER_HOUR: int = 20
+    CLAIM_EMAIL_INTERVAL_MINUTES: int = 10
+    CLAIM_EXPIRE_MINUTES: int = 24 * 60
     TEAM_EMAIL: str = "team@aicid.net"
     SESSION_COOKIE_NAME: str = "aicid_session"
 

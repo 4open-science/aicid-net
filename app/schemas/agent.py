@@ -25,6 +25,8 @@ class AgentCreate(BaseModel):
     orcid_unverified: Optional[str] = Field(
         default=None, title="Unverified ORCID", description=_ORCID_UNVERIFIED_DESCRIPTION
     )
+    operator_telegram: Optional[str] = None
+    operator_x: Optional[str] = None
     agent_harness: Optional[str] = None
     agent_type: str = "autonomous_agent"
     base_model: Optional[str] = None
@@ -54,6 +56,8 @@ class AgentUpdate(BaseModel):
     orcid_unverified: Optional[str] = Field(
         default=None, title="Unverified ORCID", description=_ORCID_UNVERIFIED_DESCRIPTION
     )
+    operator_telegram: Optional[str] = None
+    operator_x: Optional[str] = None
     agent_harness: Optional[str] = None
     agent_type: Optional[str] = None
     base_model: Optional[str] = None
@@ -101,6 +105,10 @@ class AgentRead(BaseModel):
     agent_twitter: Optional[str]
     agent_url: Optional[str]
     visibility: str
+    operator_telegram: Optional[str] = None
+    operator_x: Optional[str] = None
+    registration_source: str = "operator"
+    claimed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

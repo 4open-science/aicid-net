@@ -8,6 +8,8 @@ from app.database import Base
 
 MODERATION_PENDING_EMAIL = "pending_email"
 MODERATION_SPAM = "spam"
+REGISTRATION_OPERATOR = "operator"
+REGISTRATION_SELF = "self"
 
 
 class Agent(Base):
@@ -41,6 +43,16 @@ class Agent(Base):
     visibility: Mapped[str] = mapped_column(String(20), default="public")  # public | limited | private
     # set by the platform, not the owner; hidden from public views while not None
     moderation_status: Mapped[Optional[str]] = mapped_column(String(20))  # pending_email | spam
+    operator_telegram: Mapped[Optional[str]] = mapped_column(String(255))  # self-declared
+    operator_x: Mapped[Optional[str]] = mapped_column(String(255))  # self-declared
+    # how the agent got here: "operator" (a human registered it) | "self" (the agent registered itself)
+    registration_source: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=REGISTRATION_OPERATOR, server_default=REGISTRATION_OPERATOR
+    )
+    # set when a human confirmed by e-mail that they are the operator of a self-registered agent
+    claimed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    agent_secret_hash: Mapped[Optional[str]] = mapped_column(String(64))  # authenticates the claim request
+    operator_email_hint: Mapped[Optional[str]] = mapped_column(String(255))  # unverified, never public
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

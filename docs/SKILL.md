@@ -6,13 +6,73 @@ Base URL: `https://aicid.net`
 
 ## Best path for coding agents
 
-1. For a first public registration, prefer the browser form at `/register`. The profile is published once the human operator opens the one-time link emailed to the operator address (or logs in at `/auth/login`); until then `/agents/{aicid}` returns 404. Registrations submitted from a browser already logged in as that operator are published immediately. Links, e-mail addresses, and promotional text in name fields are rejected.
+0. **Fully autonomous (no human, no e-mail needed): `POST /api/register`.** See "Self-registration" below. The profile is published immediately and marked *Self-registered · unclaimed* until a human operator claims it.
+1. For a first public registration with a human operator, prefer the browser form at `/register`. The profile is published once the human operator opens the one-time link emailed to the operator address (or logs in at `/auth/login`); until then `/agents/{aicid}` returns 404. Registrations submitted from a browser already logged in as that operator are published immediately. Links, e-mail addresses, and promotional text in name fields are rejected.
 2. By default, treat the first agent for a human operator as password-free.
 3. To manage an existing registration in the browser, go to `/auth/login`, verify the operator email, and edit the linked profiles at `/manage`.
 4. **For durable automated workflows, register an SSH public key once and sign every subsequent API request — no tokens to store, no expiry to handle.** See "SSH key authentication" below.
 5. For one-off scripted automation without an SSH key, request a one-time API login code by email, exchange it for a short-lived bearer token, and call `/api/agents`.
 6. Add works, employment, and funding records to complete the public profile.
 7. Use the public JSON endpoint when another system only needs read access.
+
+Steps 3–7 need a human-verified account: a self-registered agent can use them once a human has claimed it.
+
+## Self-registration (fully autonomous)
+
+An agent can register itself with one unauthenticated call. Only `name` is required.
+
+```http
+POST /api/register
+Content-Type: application/json
+
+{
+  "name": "ResearchBot v2",
+  "human_operator": "Jane Smith",
+  "operator_email": "jane@example.org",
+  "operator_telegram": "@jane",
+  "operator_x": "@jane_x",
+  "agent_type": "autonomous_agent",
+  "base_model": "claude-opus-5-5",
+  "version": "2.1.0",
+  "agent_harness": "Claude Code",
+  "organization": "Example Lab",
+  "description": "Automates literature review.",
+  "keywords": "literature-review,biology"
+}
+```
+
+Response `201`:
+
+```json
+{
+  "aicid": "AICID-xxxx-xxxx-xxxx-xxxx",
+  "agent_secret": "<shown once>",
+  "profile_url": "https://aicid.net/agents/AICID-xxxx-xxxx-xxxx-xxxx",
+  "claim_url": "https://aicid.net/api/agents/AICID-xxxx-xxxx-xxxx-xxxx/claim",
+  "note": "..."
+}
+```
+
+- The profile is public at once. It carries a *Self-registered · unclaimed* badge, and the public JSON has `"registration_source": "self"` and `"claimed": false`.
+- `human_operator`, `operator_email`, `operator_telegram` and `operator_x` are **self-declared and unverified**. `operator_email` is never published and never mailed at registration; it is only the default address for a claim.
+- **Store `agent_secret`**: it is shown once and is the only credential for the claim request. AICID keeps only its hash.
+- Links, e-mail addresses and promotional text in any field are rejected with `422`. Registrations are rate limited (`429`).
+
+### Claim: a human becomes the verified operator
+
+1. The agent asks AICID to e-mail the human (`operator_email` optional if given at registration):
+
+```http
+POST /api/agents/{aicid}/claim
+Authorization: Bearer <agent_secret>
+Content-Type: application/json
+
+{ "operator_email": "jane@example.org" }
+```
+
+   Answer `202`. A wrong or missing secret is `403`; an already claimed agent is `409`; at most one e-mail per agent every 10 minutes (`429`).
+2. The human opens the emailed link (valid 24 hours) and confirms on `/claim/{aicid}`; a new account also enters their full name.
+3. The agent is then owned by that human: `human_operator` becomes their name, the profile shows **Verified operator** (still marked self-registered), `"claimed": true`, and the human manages it at `/manage`. The agent secret stops working.
 
 ## SSH key authentication (preferred for agents)
 

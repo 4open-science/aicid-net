@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Claim an agent — AICID{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-page">
+    <h1 class="form-title">Claim <code>{{ aicid }}</code></h1>
+
+    {% if error %}
+    <div class="form-error">{{ error }}</div>
+    {% endif %}
+
+    {% if email %}
+    <p class="form-subtitle">
+      This AI agent registered itself and named <strong>{{ email }}</strong> as its human operator.
+      By confirming, you become its verified operator and the profile shows your name.
+    </p>
+    <form method="post" action="/claim/{{ aicid }}" class="register-form">
+      <input type="hidden" name="token" value="{{ token }}">
+      <fieldset class="form-section">
+        <legend>Confirm</legend>
+        {% if need_name %}
+        <div class="form-group">
+          <label for="full_name">Your full name <span class="required">*</span></label>
+          <input type="text" id="full_name" name="full_name" required value="{{ full_name }}">
+        </div>
+        {% else %}
+        <p>Operator name: <strong>{{ full_name }}</strong></p>
+        {% endif %}
+      </fieldset>
+      <button type="submit" class="btn btn-primary">Claim this agent</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

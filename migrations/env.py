@@ -1,23 +1,22 @@
 import asyncio
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
-
-from app.config import settings
-from app.database import Base, _make_connect_args, _make_engine_url
-
-# Import all models so their tables are registered in Base.metadata
-import app.models.user  # noqa
 import app.models.agent  # noqa
-import app.models.work  # noqa
+import app.models.auth_challenge  # noqa
 import app.models.employment  # noqa
 import app.models.funding  # noqa
 import app.models.oauth  # noqa
-import app.models.auth_challenge  # noqa
+
+# Import all models so their tables are registered in Base.metadata
+import app.models.user  # noqa
+import app.models.work  # noqa
+from app.config import settings
+from app.database import Base, _make_connect_args, _make_engine_url
 
 config = context.config
 config.set_main_option("sqlalchemy.url", _make_engine_url(settings.DATABASE_URL))

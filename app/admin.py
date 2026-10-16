@@ -19,7 +19,12 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import app.models.employment, app.models.funding, app.models.oauth, app.models.ssh_key, app.models.work  # noqa: E401,F401  register all mappers for standalone use
+import app.models.auth_challenge  # noqa: F401  (registers all mappers for standalone use)
+import app.models.employment  # noqa: F401
+import app.models.funding  # noqa: F401
+import app.models.oauth  # noqa: F401
+import app.models.ssh_key  # noqa: F401
+import app.models.work  # noqa: F401
 from app.models.agent import MODERATION_SPAM, Agent
 from app.models.user import User
 

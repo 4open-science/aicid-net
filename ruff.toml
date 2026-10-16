@@ -1,0 +1,5 @@
+line-length = 120
+
+[lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]  # long lines are pre-existing and not enforced

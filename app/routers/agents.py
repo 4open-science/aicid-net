@@ -1,16 +1,16 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.aicid_id import generate_aicid
+from app.core.deps import Principal, ensure_clean_content, get_current_user, get_principal, owned_agent
+from app.core.email import EmailDeliveryError, send_email
 from app.database import get_db
 from app.models.agent import Agent
 from app.models.user import User
 from app.schemas.agent import AgentCreate, AgentRead, AgentUpdate
-from app.core.deps import Principal, ensure_clean_content, get_current_user, get_principal, owned_agent
-from app.core.aicid_id import generate_aicid
-from app.core.email import EmailDeliveryError, send_email
 
 router = APIRouter()
 

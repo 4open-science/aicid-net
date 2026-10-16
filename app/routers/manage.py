@@ -83,7 +83,7 @@ async def update_agent_from_browser(
 ):
     user = await _get_browser_user(request, db)
     if user is None:
-        return _login_redirect(f"/manage")
+        return _login_redirect("/manage")
 
     result = await db.execute(select(Agent).where(Agent.aicid == aicid, Agent.owner_id == user.id))
     agent = result.scalar_one_or_none()

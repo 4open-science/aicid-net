@@ -4,20 +4,19 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import settings
-from app.database import engine, Base
-
-# Import models so Base.metadata is populated before create_all / migrations
-import app.models.user  # noqa: F401
 import app.models.agent  # noqa: F401
-import app.models.work  # noqa: F401
+import app.models.auth_challenge  # noqa: F401
 import app.models.employment  # noqa: F401
 import app.models.funding  # noqa: F401
 import app.models.oauth  # noqa: F401
-import app.models.auth_challenge  # noqa: F401
 import app.models.ssh_key  # noqa: F401
 
-from app.routers import auth, agents, works, employment, funding, search, public, oauth, manage, ssh_keys, self_register  # noqa: F401
+# Import models so Base.metadata is populated before create_all / migrations
+import app.models.user  # noqa: F401
+import app.models.work  # noqa: F401
+from app.config import settings
+from app.database import Base, engine
+from app.routers import agents, auth, employment, funding, manage, oauth, public, search, self_register, ssh_keys, works  # noqa: F401
 
 
 @asynccontextmanager
@@ -60,4 +59,4 @@ application.include_router(ssh_keys.router, prefix="/api/account", tags=["ssh-ke
 application.include_router(public.router, tags=["public"])
 
 # Alias for uvicorn entrypoint and imports
-app = application
+app = application  # type: ignore[assignment]  # shadows the `app` package imported above, by design

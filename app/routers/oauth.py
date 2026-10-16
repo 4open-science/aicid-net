@@ -13,16 +13,15 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.deps import get_current_user
+from app.core.security import hash_password, verify_password
 from app.database import get_db
 from app.models.oauth import OAuthAuthCode, OAuthClient, OAuthToken
 from app.models.user import User
 from app.schemas.oauth import OAuthClientCreate, OAuthClientCreated, OAuthClientRead, OAuthTokenResponse
-from app.core.deps import get_current_user
-from app.core.security import hash_password, verify_password, decode_token
-
 from app.templating import templates
 
 router = APIRouter()

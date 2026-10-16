@@ -4,3 +4,7 @@ pytest-asyncio==0.24.0
 aiosqlite==0.20.0
 httpx==0.28.1
 PyYAML==6.0.3
+ruff==0.17.1
+mypy==2.4.0
+types-python-jose==3.5.0.20260408
+types-Markdown==3.10.2.20261007

@@ -7,7 +7,7 @@ import re
 import time
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
@@ -15,6 +15,9 @@ from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 from fastapi import HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 MAX_SKEW_SECONDS = 300
 
@@ -96,7 +99,7 @@ async def _verify_content_digest(request: Request) -> None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Content-Digest mismatch")
 
 
-async def verify_http_signature(request: Request, db: AsyncSession) -> Optional["User"]:  # type: ignore[name-defined]
+async def verify_http_signature(request: Request, db: AsyncSession) -> Optional["User"]:
     """
     Authenticate via RFC 9421 HTTP Message Signature.
     Returns User on success, None if signature headers are absent, raises 401 on failure.

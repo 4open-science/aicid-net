@@ -1,14 +1,14 @@
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 import markdown
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select, or_
 
 from app.config import settings
 from app.core.aicid_id import generate_aicid
@@ -16,13 +16,12 @@ from app.core.email import EmailDeliveryError, send_email
 from app.core.spam import spam_reason
 from app.database import get_db
 from app.models.agent import MODERATION_PENDING_EMAIL, Agent
-from app.routers.auth import AUTH_CHALLENGE_PURPOSE_BROWSER, _create_auth_challenge
-from app.routers.manage import _get_browser_user
-from app.models.user import User
-from app.models.work import Work
 from app.models.employment import Employment
 from app.models.funding import Funding
-
+from app.models.user import User
+from app.models.work import Work
+from app.routers.auth import AUTH_CHALLENGE_PURPOSE_BROWSER, _create_auth_challenge
+from app.routers.manage import _get_browser_user
 from app.templating import templates
 
 router = APIRouter()
@@ -247,7 +246,7 @@ async def register_submit(
 
     hour_ago = datetime.now(UTC) - timedelta(hours=1)
     recent_total = await db.scalar(select(func.count()).select_from(Agent).where(Agent.created_at >= hour_ago))
-    recent_for_email = 0
+    recent_for_email: int | None = 0
     if user is not None:
         recent_for_email = await db.scalar(
             select(func.count()).select_from(Agent).where(Agent.owner_id == user.id, Agent.created_at >= hour_ago)
@@ -384,7 +383,7 @@ async def search_page(
             .limit(50)
         )
         agents = result.scalars().all()
-        latest_agents = []
+        latest_agents: Sequence[Agent] = []
     else:
         agents = []
         result = await db.execute(

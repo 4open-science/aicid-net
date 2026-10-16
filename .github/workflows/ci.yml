@@ -30,6 +30,12 @@ jobs:
       - name: Validate dependency graph
         run: pip check
 
+      - name: Lint
+        run: ruff check app tests migrations
+
+      - name: Type check
+        run: mypy app
+
       - name: Run tests
         run: pytest tests/ -v --tb=short
         env:

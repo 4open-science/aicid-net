@@ -1,6 +1,5 @@
 import re
 
-
 _ORCID_PATTERN = re.compile(
     r"^(?:https?://(?:www\.)?orcid\.org/)?"
     r"(\d{4})-(\d{4})-(\d{4})-(\d{3}[\dXx])/?$"

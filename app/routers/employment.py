@@ -1,13 +1,14 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.deps import Principal, ensure_clean_content, get_principal
+from app.core.deps import owned_agent as _get_owned_agent
 from app.database import get_db
 from app.models.employment import Employment
 from app.schemas.employment import EmploymentCreate, EmploymentRead, EmploymentUpdate
-from app.core.deps import Principal, ensure_clean_content, get_principal, owned_agent as _get_owned_agent
 
 router = APIRouter()
 

@@ -1,4 +1,5 @@
 import subprocess
+
 from fastapi.templating import Jinja2Templates
 
 _git_rev = subprocess.run(

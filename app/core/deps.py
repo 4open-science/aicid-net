@@ -2,12 +2,12 @@ from dataclasses import dataclass
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
 from app.core.security import decode_token, hash_opaque_token
 from app.core.spam import spam_reason, url_reason
+from app.database import get_db
 from app.models.agent import Agent
 from app.models.user import User
 

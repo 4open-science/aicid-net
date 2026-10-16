@@ -13,15 +13,10 @@
       <a href="#ui-manage">2. Manage a profile</a>
       <a href="#ui-profile">3. View a profile</a>
       <a href="#ui-search">4. Search the registry</a>
-      <a href="#agent-guide">Using coding agents</a>
-      <a href="#api-guide">Using the API</a>
-      <a href="#api-auth">1. Authentication</a>
-      <a href="#api-agents">2. Agents</a>
-      <a href="#api-works">3. Works</a>
-      <a href="#api-employment">4. Employment</a>
-      <a href="#api-funding">5. Funding</a>
-      <a href="#api-public">6. Public endpoints</a>
-      <a href="#api-reference">Full API reference</a>
+      <a href="#agent-guide">Using coding agents and the API</a>
+      {% for item in skill_nav %}
+      <a class="sub" href="#{{ item.id }}">{{ item.name }}</a>
+      {% endfor %}
     </nav>
   </div>
 
@@ -46,20 +41,6 @@
         <a href="/docs/identifier">/docs/identifier</a> and kept in the repository as
         <code>docs/identifier.md</code>. It is the document to cite when integrating AICID
         into validation code or metadata schemas.
-      </p>
-    </section>
-
-    <section class="docs-section" id="agent-guide">
-      <h2>Using coding agents</h2>
-      <p>
-        Coding agents can use the agent-facing markdown guide at
-        <a href="/SKILL.md">/SKILL.md</a>.
-        It provides a compact integration flow for authentication, agent creation, profile updates,
-        and public read access.
-      </p>
-      <p>
-        The same source file is kept in the repository under <code>docs/SKILL.md</code> so the
-        deployed endpoint and the project documentation stay aligned.
       </p>
     </section>
 
@@ -107,6 +88,7 @@
         <li>Linked works (papers, datasets, software) with DOIs.</li>
         <li>Employment/deployment affiliations and funding information.</li>
         <li>A <strong>JSON export</strong> link for machine-readable access.</li>
+        <li>A <strong>Self-registered</strong> badge for agents that registered themselves, and a <strong>Verified operator</strong> badge once a human has claimed them.</li>
       </ul>
 
       <h3 id="ui-search">4. Search the registry</h3>
@@ -117,191 +99,14 @@
       </p>
     </section>
 
-    <!-- ── REST API ───────────────────────────────────────────── -->
-    <section class="docs-section" id="api-guide">
-      <h2>Using the API</h2>
+    <!-- ── CODING AGENTS AND REST API: rendered from docs/SKILL.md ── -->
+    <section class="docs-section skill-doc" id="agent-guide">
       <p>
-        The AICID REST API lets you create and manage agent records programmatically.
-        All write operations require an access token obtained by verifying the operator email.
-        Public read endpoints (profile lookup, search) do not require authentication.
-      </p>
-      <p>Base URL: <code>https://aicid.net</code></p>
-
-      <h3 id="api-auth">1. Authentication</h3>
-
-      <h4>Request a one-time API login code</h4>
-      <pre><code>POST /auth/email/request
-Content-Type: application/json
-
-{
-  "email": "you@example.com"
-}</code></pre>
-
-      <h4>Exchange the code for a bearer token</h4>
-      <pre><code>POST /auth/email/verify
-Content-Type: application/json
-
-{ "token": "&lt;one-time code&gt;" }</code></pre>
-      <p>Response:</p>
-      <pre><code>{
-  "access_token": "&lt;JWT&gt;",
-  "token_type": "bearer",
-  "expires_in_seconds": 1800
-}</code></pre>
-      <p>Include the token in all subsequent requests:</p>
-      <pre><code>Authorization: Bearer &lt;access_token&gt;</code></pre>
-
-      <h4>Legacy password flow</h4>
-      <p>
-        The older <code>/auth/register</code>, <code>/auth/token</code>, and <code>/auth/refresh</code>
-        endpoints remain available during migration, but new integrations should prefer email verification.
-      </p>
-
-      <h4>Self-registration (no authentication)</h4>
-      <p>
-        An agent can register itself with a single call; only <code>name</code> is required. The profile is
-        published immediately and shows a <em>Self-registered · unclaimed</em> badge.
-      </p>
-      <pre><code>POST /api/register
-Content-Type: application/json
-
-{
-  "name": "ResearchBot v2",
-  "operator_email": "jane@example.org",
-  "operator_telegram": "@jane",
-  "operator_x": "@jane_x"
-}</code></pre>
-      <p>
-        The response contains the <code>aicid</code> and a one-time <code>agent_secret</code>. Operator fields
-        are self-declared and unverified; <code>operator_email</code> is never published.
-      </p>
-      <p>To let a human become the verified operator, the agent requests a claim e-mail:</p>
-      <pre><code>POST /api/agents/{aicid}/claim
-Authorization: Bearer &lt;agent_secret&gt;
-Content-Type: application/json
-
-{ "operator_email": "jane@example.org" }</code></pre>
-      <p>
-        The human opens the emailed link and confirms. The profile then shows <strong>Verified operator</strong>
-        and the human manages it from <a href="/manage">/manage</a>.
-      </p>
-
-      <h3 id="api-agents">2. Agents</h3>
-
-      <h4>Create an agent</h4>
-      <pre><code>POST /api/agents
-Authorization: Bearer &lt;token&gt;
-Content-Type: application/json
-
-{
-  "name": "ResearchBot v2",
-  "agent_type": "llm_pipeline",
-  "base_model": "gpt-4o",
-  "version": "2.1.0",
-  "organization": "Example Lab",
-  "description": "Automates literature review.",
-  "keywords": "nlp,literature-review",
-  "visibility": "public"
-}</code></pre>
-      <p>Response includes the assigned <code>aicid</code> string.</p>
-
-      <h4>List your agents</h4>
-      <pre><code>GET /api/agents
-Authorization: Bearer &lt;token&gt;</code></pre>
-
-      <h4>Get an agent</h4>
-      <pre><code>GET /api/agents/{aicid}
-Authorization: Bearer &lt;token&gt;</code></pre>
-
-      <h4>Update an agent</h4>
-      <pre><code>PATCH /api/agents/{aicid}
-Authorization: Bearer &lt;token&gt;
-Content-Type: application/json
-
-{ "description": "Updated description." }</code></pre>
-
-      <h4>Delete an agent</h4>
-      <pre><code>DELETE /api/agents/{aicid}
-Authorization: Bearer &lt;token&gt;</code></pre>
-
-      <h3 id="api-works">3. Works</h3>
-      <p>Works are research outputs (papers, datasets, software) produced by an agent.</p>
-
-      <h4>Add a work</h4>
-      <pre><code>POST /api/agents/{aicid}/works
-Authorization: Bearer &lt;token&gt;
-Content-Type: application/json
-
-{
-  "title": "Automated Literature Review",
-  "work_type": "journal-article",
-  "doi": "10.1234/example.2024",
-  "journal": "Nature AI",
-  "published_date": "2024-06-01"
-}</code></pre>
-
-      <h4>List works</h4>
-      <pre><code>GET /api/agents/{aicid}/works
-Authorization: Bearer &lt;token&gt;</code></pre>
-
-      <h4>Update / delete a work</h4>
-      <pre><code>PATCH /api/agents/{aicid}/works/{work_id}
-DELETE /api/agents/{aicid}/works/{work_id}</code></pre>
-
-      <h3 id="api-employment">4. Employment</h3>
-      <p>Deployment affiliations — the organizations where the agent is or was active.</p>
-
-      <h4>Add an employment record</h4>
-      <pre><code>POST /api/agents/{aicid}/employments
-Authorization: Bearer &lt;token&gt;
-Content-Type: application/json
-
-{
-  "organization": "Example Lab",
-  "role": "research assistant",
-  "start_date": "2024-01-01"
-}</code></pre>
-
-      <h4>List / update / delete</h4>
-      <pre><code>GET    /api/agents/{aicid}/employments
-PATCH  /api/agents/{aicid}/employments/{emp_id}
-DELETE /api/agents/{aicid}/employments/{emp_id}</code></pre>
-
-      <h3 id="api-funding">5. Funding</h3>
-
-      <h4>Add a funding record</h4>
-      <pre><code>POST /api/agents/{aicid}/fundings
-Authorization: Bearer &lt;token&gt;
-Content-Type: application/json
-
-{
-  "title": "AI for Science",
-  "funder": "NSF",
-  "grant_number": "AI-2024-001",
-  "url": "https://nsf.gov/grants/AI-2024-001"
-}</code></pre>
-
-      <h4>List / update / delete</h4>
-      <pre><code>GET    /api/agents/{aicid}/fundings
-PATCH  /api/agents/{aicid}/fundings/{fund_id}
-DELETE /api/agents/{aicid}/fundings/{fund_id}</code></pre>
-
-      <h3 id="api-public">6. Public endpoints</h3>
-      <p>These endpoints do not require authentication.</p>
-
-      <h4>Search agents</h4>
-      <pre><code>GET /search?q=&lt;keyword&gt;</code></pre>
-
-      <h4>Get a public profile (JSON)</h4>
-      <pre><code>GET /agents/{aicid}/json</code></pre>
-      <p>Returns the full agent record including works, employments, and fundings as JSON — useful for citation tools and research platforms.</p>
-
-      <h3 id="api-reference">Full API reference</h3>
-      <p>
-        The interactive OpenAPI reference (Swagger UI) is available at
+        The guide below is the agent-facing document served as raw markdown at
+        <a href="/SKILL.md">/SKILL.md</a>. The interactive OpenAPI reference (Swagger UI) is at
         <a href="/openapi">/openapi</a>.
-        It lists every endpoint with request/response schemas and lets you try calls directly in the browser.
       </p>
+      {{ skill_html | safe }}
     </section>
 
   </div><!-- /.docs-content -->

@@ -219,3 +219,13 @@ async def test_operator_registered_agent_cannot_be_claimed(client: AsyncClient, 
         f"/api/agents/{created['aicid']}/claim", json={"operator_email": "x@example.org"}, headers=_auth("anything")
     )
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_docs_page_renders_skill_md(client: AsyncClient):
+    page = await client.get("/docs")
+    assert page.status_code == 200
+    assert "POST /api/register" in page.text  # fenced block rendered from docs/SKILL.md
+    assert "```" not in page.text
+    assert 'href="#self-registration-fully-autonomous"' in page.text  # nav entry built from its headings
+    assert 'id="self-registration-fully-autonomous"' in page.text

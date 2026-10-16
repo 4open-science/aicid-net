@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+import markdown
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -32,6 +33,18 @@ REGISTRATION_REJECTED_DETAIL = (
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _SKILL_DOC_PATH = _PROJECT_ROOT / "docs" / "SKILL.md"
 _IDENTIFIER_SPEC_PATH = _PROJECT_ROOT / "docs" / "identifier.md"
+
+
+def _render_skill_doc() -> tuple[str, list[dict]]:
+    """docs/SKILL.md as HTML (a repo-owned, trusted file) plus its section headings for the nav."""
+    md = markdown.Markdown(
+        extensions=["fenced_code", "tables", "toc"],
+        extension_configs={"toc": {"baselevel": 2}},  # the document's H1 becomes an H2 of the docs page
+    )
+    html = md.convert(_SKILL_DOC_PATH.read_text(encoding="utf-8"))
+    tokens = md.toc_tokens  # type: ignore[attr-defined]
+    sections = tokens[0]["children"] if len(tokens) == 1 else tokens
+    return html, [{"id": t["id"], "name": t["name"]} for t in sections]
 
 
 def _normalized_name(value: str | None) -> str:
@@ -338,7 +351,8 @@ async def _notify_team_of_registration(agent: Agent, operator_email: str, client
 
 @router.get("/docs", response_class=HTMLResponse)
 async def docs_page(request: Request):
-    return templates.TemplateResponse(request, "docs.html", {})
+    skill_html, skill_nav = _render_skill_doc()
+    return templates.TemplateResponse(request, "docs.html", {"skill_html": skill_html, "skill_nav": skill_nav})
 
 
 @router.get("/docs/identifier", response_class=FileResponse)

@@ -339,6 +339,8 @@ Fetch the public HTML profile:
 GET /agents/{aicid}
 ```
 
+The interactive OpenAPI reference listing every endpoint and schema is at `/openapi`.
+
 ## Bug reports
 
 To report a bug or request a feature, open an issue at https://github.com/4open-science/aicid-net/issues.

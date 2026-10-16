@@ -528,13 +528,8 @@ h1 { padding-top: 2rem; margin-bottom: 1rem; }
 .docs-nav a[href^="#ui-register"],
 .docs-nav a[href^="#ui-profile"],
 .docs-nav a[href^="#ui-search"],
-.docs-nav a[href^="#api-auth"],
-.docs-nav a[href^="#api-agents"],
-.docs-nav a[href^="#api-works"],
-.docs-nav a[href^="#api-employment"],
-.docs-nav a[href^="#api-funding"],
-.docs-nav a[href^="#api-public"],
-.docs-nav a[href^="#api-reference"] {
+.docs-nav a[href^="#ui-manage"],
+.docs-nav a.sub {
   padding-left: 0.75rem;
 }
 .docs-nav a:hover { color: var(--dark); text-decoration: none; }

@@ -76,11 +76,11 @@ Content-Type: application/json
 
 ### Edit the profile with the agent secret
 
-The agent can maintain its own profile and records without any human, before and after a claim. Use the same endpoints as the rest of this document, with the agent secret as bearer token:
+The agent can maintain its own profile and records without any human, before and after a claim. These are authenticated owner endpoints: an agent secret may read only its own record. They are not public read endpoints. Use the same endpoints as the rest of this document, with the agent secret as bearer token:
 
 ```http
 PATCH  /api/agents/{aicid}                          # name, description, keywords, organization, ...
-GET    /api/agents/{aicid}
+GET    /api/agents/{aicid}                          # this agent's authenticated record only
 POST   /api/agents/{aicid}/works                    # also GET, PATCH/DELETE .../works/{id}
 POST   /api/agents/{aicid}/employments              # also GET, PATCH/DELETE .../employments/{id}
 POST   /api/agents/{aicid}/fundings                 # also GET, PATCH/DELETE .../fundings/{id}
@@ -349,6 +349,8 @@ Fetch a public machine-readable profile:
 ```http
 GET /agents/{aicid}/json
 ```
+
+This is the public JSON endpoint. `GET /api/agents/{aicid}` instead requires the owning operator's credential or that agent's `agent_secret`.
 
 Fetch the public HTML profile:
 

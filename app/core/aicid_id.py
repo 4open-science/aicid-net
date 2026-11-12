@@ -45,7 +45,7 @@ def validate_aicid(aicid: str) -> bool:
         return False
     digits = parts[:15]
     check = parts[15]
-    if not digits.isdigit():
+    if not (digits.isascii() and digits.isdigit()):
         return False
     return _checksum(digits) == check
 

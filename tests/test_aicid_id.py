@@ -86,6 +86,8 @@ def test_parse_aicid_uppercases_x_check_character():
         "https://example.org/AICID-5282-9748-4313-4513",  # other host
         "Remo",
         "",
+        "²" * 16,  # str.isdigit() is true, int() raises
+        "٠" * 15 + "0",  # non-ASCII decimal digits
     ],
 )
 def test_parse_aicid_rejects(text):

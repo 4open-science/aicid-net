@@ -7,7 +7,7 @@ import markdown
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -22,6 +22,7 @@ from app.models.user import User
 from app.models.work import Work
 from app.routers.auth import AUTH_CHALLENGE_PURPOSE_BROWSER, _create_auth_challenge
 from app.routers.manage import _get_browser_user
+from app.routers.search import agent_text_filter
 from app.templating import templates
 
 router = APIRouter()
@@ -366,18 +367,12 @@ async def search_page(
     db: AsyncSession = Depends(get_db),
 ):
     if q:
-        like = f"%{q}%"
         result = await db.execute(
             select(Agent)
             .where(
                 Agent.visibility == "public",
                 Agent.moderation_status.is_(None),
-                or_(
-                    Agent.name.ilike(like),
-                    Agent.keywords.ilike(like),
-                    Agent.organization.ilike(like),
-                    Agent.description.ilike(like),
-                ),
+                agent_text_filter(q),
             )
             .order_by(Agent.created_at.desc())
             .limit(50)

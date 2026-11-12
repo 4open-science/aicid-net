@@ -2,7 +2,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.core.aicid_id import _checksum, generate_aicid, validate_aicid
+from app.core.aicid_id import _checksum, generate_aicid, parse_aicid, validate_aicid
 
 
 def test_generate_shape():
@@ -47,6 +47,49 @@ def test_invalid_inputs():
     assert not validate_aicid("")
     # Current implementation is case-sensitive on the prefix.
     assert not validate_aicid("aicid-5282-9748-4313-4513")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "AICID-5282-9748-4313-4513",
+        "  AICID-5282-9748-4313-4513  ",
+        "aicid-5282-9748-4313-4513",
+        "5282-9748-4313-4513",
+        "5282974843134513",
+        "5282 9748 4313 4513",
+        "AICID 5282 9748 4313 4513",
+        "AICID5282974843134513",
+        "AICID:5282-9748-4313-4513",
+        "AICID–5282–9748–4313–4513",
+        "https://aicid.net/AICID-5282-9748-4313-4513",
+        "https://aicid.net/agents/AICID-5282-9748-4313-4513",
+        "aicid.net/agents/AICID-5282-9748-4313-4513/json",
+    ],
+)
+def test_parse_aicid_accepts_display_forms(text):
+    assert parse_aicid(text) == "AICID-5282-9748-4313-4513"
+
+
+def test_parse_aicid_uppercases_x_check_character():
+    assert parse_aicid("0000 0000 0000 001x") == "AICID-0000-0000-0000-001X"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "AICID-5282-9748-4313-4514",  # wrong check character
+        "5282974843134514",  # 16 digits, wrong check character
+        "5282-9748-4313",  # partial
+        "AICID-5282-9748-4313-4513-9999",  # too long
+        "AICID-5282-97a8-4313-4513",  # letter among the digits
+        "https://example.org/AICID-5282-9748-4313-4513",  # other host
+        "Remo",
+        "",
+    ],
+)
+def test_parse_aicid_rejects(text):
+    assert parse_aicid(text) is None
 
 
 @pytest.mark.asyncio

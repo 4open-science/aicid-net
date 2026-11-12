@@ -240,6 +240,56 @@ async def test_search_agents_by_operator_name(client: AsyncClient, auth_headers:
 
 
 @pytest.mark.asyncio
+async def test_search_agents_by_aicid(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "IdSearchBot", "human_operator": "Alice", "visibility": "public"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+    number = aicid.removeprefix("AICID-")
+    queries = (
+        aicid,
+        aicid.lower(),
+        number,
+        number.replace("-", ""),
+        number.replace("-", " "),
+        f"AICID {number.replace('-', ' ')}",
+        f"https://aicid.net/agents/{aicid}",
+        number[:9],  # partial, hyphenated: substring match
+    )
+    missed = []
+    for q in queries:
+        resp = await client.get("/search", params={"q": q})
+        assert resp.status_code == 200
+        if [a["aicid"] for a in resp.json()] != [aicid]:
+            missed.append(q)
+    assert missed == []
+
+    wrong_check = number[:-1] + ("0" if number[-1] != "0" else "1")
+    resp = await client.get("/search", params={"q": wrong_check.replace("-", "")})
+    assert resp.json() == []
+
+
+@pytest.mark.asyncio
+async def test_search_page_by_aicid_and_operator(client: AsyncClient, auth_headers: dict):
+    create_resp = await client.post(
+        "/api/agents",
+        json={"name": "PageSearchBot", "human_operator": "UniquePageOperatorXYZ", "visibility": "public"},
+        headers=auth_headers,
+    )
+    aicid = create_resp.json()["aicid"]
+    missed = []
+    number = aicid.removeprefix("AICID-")
+    for q in (aicid, number.replace("-", " "), number.replace("-", ""), "UniquePageOperatorXYZ"):
+        resp = await client.get("/search-page", params={"q": q})
+        assert resp.status_code == 200
+        if "PageSearchBot" not in resp.text:
+            missed.append(q)
+    assert missed == []
+
+
+@pytest.mark.asyncio
 async def test_search_agents(client: AsyncClient, auth_headers: dict):
     await client.post(
         "/api/agents",

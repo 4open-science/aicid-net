@@ -9,7 +9,13 @@ The normative specification lives in docs/identifier.md, served at
 https://aicid.net/docs/identifier.
 """
 import random
+import re
 import string
+
+# Prefixes and separators tolerated by parse_aicid (docs/identifier.md, "Parsing rules").
+_URL_PREFIX = re.compile(r"^(?:https?://)?(?:www\.)?aicid\.net/(?:agents/)?", re.IGNORECASE)
+_URL_SUFFIX = re.compile(r"/(?:json)?$", re.IGNORECASE)
+_SEPARATORS = re.compile(r"[\s\-‐‑‒–—]+")
 
 
 def _checksum(digits: str) -> str:
@@ -42,3 +48,19 @@ def validate_aicid(aicid: str) -> bool:
     if not digits.isdigit():
         return False
     return _checksum(digits) == check
+
+
+def parse_aicid(text: str) -> str | None:
+    """Return the canonical AICID written in ``text``, or None.
+
+    Lenient on the display form, strict on the identifier: accepts lowercase,
+    the profile URL, a missing ``AICID`` prefix, and spaces, hyphens or nothing
+    between the groups (``aicid 5292 9078 3865 2458``, ``5292907838652458``),
+    but only returns identifiers whose check character is valid.
+    """
+    body = _URL_SUFFIX.sub("", _URL_PREFIX.sub("", text.strip())).upper()
+    body = _SEPARATORS.sub("", body.removeprefix("AICID").lstrip(":"))
+    if len(body) != 16:
+        return None
+    candidate = f"AICID-{body[0:4]}-{body[4:8]}-{body[8:12]}-{body[12:16]}"
+    return candidate if validate_aicid(candidate) else None
